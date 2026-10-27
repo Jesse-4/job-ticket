@@ -82,6 +82,13 @@ button, .btn {
   border: 1px solid var(--line); border-radius: 8px; padding: 9px 13px; cursor: pointer;
 }
 button:hover { border-color: var(--carbon); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+button:disabled:hover { border-color: var(--line); }
+input:disabled, select:disabled, textarea:disabled { opacity: 0.7; cursor: not-allowed; }
+.lockbar { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; padding: 12px 14px; border-radius: 12px; background: var(--panel); border: 1.5px solid var(--paid); }
+.lockbar strong { display: block; color: var(--paid); }
+.lockbar span { color: var(--muted); font-size: 13.5px; }
+.confirm-note { display: grid; gap: 8px; font-size: 13.5px; padding: 10px 12px; border-radius: 8px; background: var(--ground); }
 button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
   outline: 2px solid var(--carbon); outline-offset: 1px;
 }
@@ -385,6 +392,10 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
 
     <div class="main" id="main">
       <form class="form" id="form" autocomplete="off">
+        <div class="lockbar keep" id="lockBar" hidden>
+          <div><strong>Paid invoice · locked</strong><span>On the free plan, paid invoices can't be changed. Repeat this job as a new invoice, or upgrade to edit paid invoices anytime.</span></div>
+          <div class="subrow"><button type="button" id="lockRepeat" class="primary">Repeat this job</button><button type="button" id="lockUpgrade">Upgrade to edit</button></div>
+        </div>
         <div class="panel">
           <div class="row-top">
             <div class="seg" role="group" aria-label="Document type">
@@ -396,6 +407,10 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
               <button type="button" data-status="sent">Sent</button>
               <button type="button" data-status="paid" id="stPaid">Paid</button>
             </div>
+          </div>
+          <div id="paidConfirm" class="confirm-note" hidden>
+            <span>Mark this invoice as paid? On the free plan, paid invoices are locked so they can't be changed or reused. You can still view, copy and print them.</span>
+            <div class="subrow"><button type="button" id="paidYes" class="primary">Mark as paid</button><button type="button" id="paidNo">Cancel</button></div>
           </div>
           <div class="grid3">
             <label>Number<input id="f-number" data-path="number"></label>
@@ -447,10 +462,10 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
             <label>Sales tax<span class="money-in pct" data-sym="%"><input id="f-tax" type="number" step="0.01" min="0" data-path="taxRate" data-num></span></label>
             <label><span id="depLabel">Deposit received</span><span class="money-in" data-sym="$" id="sym-dep"><input id="f-deposit" type="number" step="0.01" min="0" data-path="deposit" data-num></span></label>
           </div>
-          <div class="subrow">
+          <div class="subrow keep">
             <button type="button" id="tplSaveOpen" class="link">Save these lines as a template</button>
           </div>
-          <div id="tplSaveRow" class="inline-form" hidden>
+          <div id="tplSaveRow" class="inline-form keep" hidden>
             <input id="tplName" placeholder="Template name, e.g. Tankless heater install" aria-label="Template name">
             <button type="button" id="tplSaveYes" class="primary">Save template</button>
             <button type="button" id="tplSaveNo">Cancel</button>
@@ -465,12 +480,12 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
 
         <div class="row-top">
           <div class="subrow">
-            <button type="button" id="dupBtn" class="ghost">Duplicate</button>
+            <button type="button" id="dupBtn" class="ghost keep">Duplicate</button>
             <button type="button" id="convertBtn" class="ghost">Turn into invoice</button>
           </div>
-          <button type="button" id="delBtn" class="link danger">Delete this ticket</button>
+          <button type="button" id="delBtn" class="link danger keep">Delete this ticket</button>
         </div>
-        <div id="confirmDel" class="confirm" hidden>
+        <div id="confirmDel" class="confirm keep" hidden>
           <span id="delMsg">Delete this ticket for good?</span>
           <button type="button" id="delYes" class="danger">Delete</button>
           <button type="button" id="delNo">Keep it</button>
@@ -573,6 +588,7 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
     <p id="pwLead">Hope Job Ticket saved you some time. Upgrade to keep going.</p>
     <ul class="perks">
       <li>Unlimited invoices (quotes are always free)</li>
+      <li>Edit paid invoices anytime</li>
       <li>Your templates, rates and tickets stay right where they are</li>
       <li>"Made with Job Ticket" removed from your tickets</li>
     </ul>
@@ -811,6 +827,8 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
   function codeCheck(id) { var h = fnv(CODE_SALT + "|" + id), out = ""; for (var i = 0; i < 4; i++) { out += ALPH[h % 32]; h = Math.floor(h / 32); } return out; }
   function validCode(c) { var m = /^JT-([A-Z2-9]{4})-([A-Z2-9]{4})$/.exec(c); return !!m && codeCheck(m[1]) === m[2]; }
   function isPro() { return !!plan.unlocked; }
+  // Free plan: a paid invoice is a closed record, so it can't be rewritten into a new job.
+  function isLocked(d) { return d.kind === "invoice" && d.status === "paid" && !isPro(); }
   function freeLeft() { return Math.max(0, FREE_INVOICES - plan.used); }
   function canMakeInvoice() { return isPro() || freeLeft() > 0; }
   // Count a ticket the first time it becomes an invoice. Returns false (and shows the upgrade) when out of free invoices.
@@ -854,7 +872,8 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
     var c = $("#pwCode").value.toUpperCase().replace(/[^A-Z0-9]/g, "");
     c = c.replace(/^JT/, "").replace(/^(.{4})(.{4})$/, "JT-$1-$2");
     if (!validCode(c)) { $("#pwErr").textContent = "That code doesn't match. Check it and try again (it looks like JT-AB3D-9KXQ)."; $("#pwErr").hidden = false; return; }
-    plan.unlocked = true; plan.code = c; flush(); closePaywall(); renderPlan(); renderPreview();
+    plan.unlocked = true; plan.code = c; flush(); closePaywall(); renderPlan();
+    if (view === "ticket") renderTicketView(); else renderPreview();
     toast("Unlocked. Unlimited invoices are on. Thank you!");
   }
   $("#pwUnlock").addEventListener("click", tryUnlock);
@@ -906,7 +925,13 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
     });
     var s = sym(doc.currency);
     $("#sym-disc").setAttribute("data-sym", s); $("#sym-dep").setAttribute("data-sym", s);
-    renderSegs(); renderItems(); renderTpl(); renderPreview(); renderMinWarn(); renderBookList(); updateBar();
+    renderSegs(); renderItems(); renderTpl(); renderPreview(); renderMinWarn(); renderBookList(); updateBar(); applyLock();
+  }
+  function applyLock() {
+    var locked = isLocked(doc);
+    $("#lockBar").hidden = !locked;
+    if (locked) { $("#tplBox").hidden = true; $("#paidConfirm").hidden = true; }
+    $$("#form input, #form select, #form textarea, #form button").forEach(function (el) { if (!el.closest(".keep")) el.disabled = locked; });
   }
   function renderSegs() {
     $$("[data-kind]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-kind") === doc.kind)); });
@@ -919,6 +944,7 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
     $("#depLabel").textContent = q ? "Deposit to start" : "Deposit received";
     $("#stPaid").textContent = q ? "Accepted" : "Paid";
     $("#convertBtn").hidden = !q;
+    $("#dupBtn").textContent = !q && doc.status === "paid" ? "Repeat this job" : "Duplicate";
   }
   var UNITS = ["hr", "ea", "day", "sq ft", "ft", "gal", "cu yd", "visit", "job"];
   function unitOpts(cur) {
@@ -1139,6 +1165,7 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
     persist(); renderPreview(); renderMinWarn(); updateBar(); renderBadge();
   }
   function handleField(el) {
+    if (isLocked(doc) && el.closest("#form") && !el.closest(".keep")) return;
     if (el.hasAttribute("data-path")) {
       setPath(doc, el.getAttribute("data-path"), el.hasAttribute("data-num") ? num(el.value) : el.value);
       docChanged();
@@ -1196,6 +1223,7 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
     if (b.hasAttribute("data-view")) { showView(b.getAttribute("data-view")); return; }
     if (b.hasAttribute("data-open")) { openDoc(docs.filter(function (d) { return d.id === b.getAttribute("data-open"); })[0], true); return; }
     if (b.hasAttribute("data-filter")) { filter = b.getAttribute("data-filter"); renderList(); return; }
+    if (isLocked(doc) && b.closest("#form") && !b.closest(".keep")) return;
     if (b.hasAttribute("data-kind")) {
       var k = b.getAttribute("data-kind");
       if (k !== doc.kind) {
@@ -1204,7 +1232,10 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
         if (k === "invoice") toast("Switched to invoice " + doc.number + freeNote());
       }
     } else if (b.hasAttribute("data-status")) {
-      doc.status = b.getAttribute("data-status"); renderSegs(); docChanged();
+      var st = b.getAttribute("data-status");
+      if (st === "paid" && doc.kind === "invoice" && !isPro() && doc.status !== "paid") { $("#paidConfirm").hidden = false; return; }
+      $("#paidConfirm").hidden = true;
+      doc.status = st; renderSegs(); docChanged();
     } else if (b.hasAttribute("data-del")) {
       doc.items.splice(+b.getAttribute("data-del"), 1); renderItems(); docChanged();
     } else if (b.hasAttribute("data-quick")) {
@@ -1298,6 +1329,13 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
     doc.status = "paid"; // the quote is now accepted
     docs.push(d); openDoc(d); toast("Invoice " + d.number + " created. Quote marked accepted" + (freeNote() || "."));
   });
+  $("#paidYes").addEventListener("click", function () {
+    doc.status = "paid"; $("#paidConfirm").hidden = true; docChanged(); renderTicketView();
+    toast(doc.number + " marked paid and locked");
+  });
+  $("#paidNo").addEventListener("click", function () { $("#paidConfirm").hidden = true; });
+  $("#lockRepeat").addEventListener("click", function () { $("#dupBtn").click(); });
+  $("#lockUpgrade").addEventListener("click", function () { openPaywall(false); });
   $("#delBtn").addEventListener("click", function () {
     $("#delMsg").textContent = doc.counted && !isPro()
       ? "Delete this invoice for good? It still counts as one of your " + FREE_INVOICES + " free invoices."
