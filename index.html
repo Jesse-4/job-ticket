@@ -346,8 +346,12 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
   .main .preview { display: block !important; position: static; }
   .ticket { box-shadow: none; }
   .perf { display: none; }
-  .stamp.draft { display: none; }
+  .stamp.draft, .stamp.sent, .stamp.overdue { display: none; }
+  .overlay, #hostedNote, #copyWrap { display: none !important; }
 }
+/* Off-screen copy of the ticket used to make the PDF */
+.pdf-sheet { width: 760px; box-shadow: none; border-radius: 0; }
+.pdf-sheet .perf { display: none; }
 </style>
 
 </head>
@@ -502,10 +506,12 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
         <div class="preview-tools">
           <div class="btns">
             <button id="copyText" type="button" class="primary">Copy for text or email</button>
-            <button id="printBtn" type="button" hidden>Print / Save PDF</button>
+            <button id="pdfBtn" type="button" hidden>Download PDF</button>
+            <button id="printBtn" type="button" hidden>Print</button>
           </div>
           <span class="save-state" id="saveState">Saved on this device</span>
         </div>
+        <span class="hint" id="hostedNote" hidden>Download PDF and Print appear on your live site. This preview can't print or download files.</span>
         <span class="example-note" id="exampleNote">This is an example ticket. Edit it, or start your own with + New invoice.</span>
         <div class="ticket" id="ticket"></div>
         <div id="copyWrap" hidden>
@@ -831,6 +837,8 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
   var ALPH = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   function fnv(str) { var h = 0x811c9dc5; for (var i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return h >>> 0; }
   function codeCheck(id) { var h = fnv(CODE_SALT + "|" + id), out = ""; for (var i = 0; i < 4; i++) { out += ALPH[h % 32]; h = Math.floor(h / 32); } return out; }
+  // Owner's test code: puts the free plan back to 3 unused invoices (see tools/make-codes.js --reset).
+  function validReset(c) { var m = /^JT-([A-Z2-9]{4})-([A-Z2-9]{4})$/.exec(c); return !!m && codeCheck("reset|" + m[1]) === m[2]; }
   function validCode(c) { var m = /^JT-([A-Z2-9]{4})-([A-Z2-9]{4})$/.exec(c); return !!m && codeCheck(m[1]) === m[2]; }
   function isPro() { return !!plan.unlocked; }
   // Free plan: a paid invoice is a closed record, so it can't be rewritten into a new job.
@@ -886,6 +894,12 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
   function tryUnlock() {
     var c = $("#pwCode").value.toUpperCase().replace(/[^A-Z0-9]/g, "");
     c = c.replace(/^JT/, "").replace(/^(.{4})(.{4})$/, "JT-$1-$2");
+    if (validReset(c)) {
+      plan.used = 0; plan.unlocked = false; plan.code = ""; flush(); closePaywall(); renderPlan();
+      if (view === "ticket") renderTicketView(); else renderPreview();
+      toast("Test reset: you're on the free plan with " + FREE_INVOICES + " free invoices again.");
+      return;
+    }
     if (!validCode(c)) { $("#pwErr").textContent = "That code doesn't match. Check it and try again (it looks like JT-AB3D-9KXQ)."; $("#pwErr").hidden = false; return; }
     plan.unlocked = true; plan.code = c; flush(); closePaywall(); renderPlan();
     if (view === "ticket") renderTicketView(); else renderPreview();
@@ -1444,7 +1458,59 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
   });
 
   window.addEventListener("beforeprint", markSent);
-  if (window.JT_PRINT) { $("#printBtn").hidden = false; $("#printBtn").addEventListener("click", function () { window.print(); }); }
+  // PDF and print only work on the hosted site; the Claude preview blocks both.
+  var pdfLib = null;
+  function loadPdfLib() {
+    if (window.html2pdf) return Promise.resolve();
+    return pdfLib || (pdfLib = new Promise(function (res, rej) {
+      var sc = document.createElement("script"); sc.src = "lib/html2pdf.bundle.min.js";
+      sc.onload = res; sc.onerror = function () { pdfLib = null; rej(); };
+      document.head.appendChild(sc);
+    }));
+  }
+  function pdfName() {
+    return [doc.kind === "quote" ? "Quote" : "Invoice", doc.number, doc.client.name].filter(Boolean).join(" ").replace(/[\\/:*?"<>|]+/g, "") + ".pdf";
+  }
+  function makePdf() {
+    var sheet = $("#ticket").cloneNode(true); sheet.removeAttribute("id"); sheet.classList.add("pdf-sheet");
+    // The customer sees PAID, never Draft, Sent or Overdue.
+    [].forEach.call(sheet.querySelectorAll(".stamp:not(.paid)"), function (el) { el.remove(); });
+    return html2pdf().set({
+      margin: 24, filename: pdfName(), image: { type: "jpeg", quality: 0.96 },
+      html2canvas: { scale: 2, backgroundColor: "#ffffff", scrollX: 0, scrollY: 0 },
+      jsPDF: { unit: "pt", format: "letter", orientation: "portrait" }, pagebreak: { mode: ["css", "legacy"] }
+    }).from(sheet).outputPdf("blob");
+  }
+  function saveBlob(blob, name) {
+    var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 10000);
+  }
+  if (window.JT_PRINT) {
+    $("#printBtn").hidden = false; $("#pdfBtn").hidden = false;
+    $("#printBtn").addEventListener("click", function () { window.print(); });
+    $("#pdfBtn").addEventListener("click", function () {
+      var btn = $("#pdfBtn"), name = pdfName();
+      btn.disabled = true; btn.textContent = "Making PDF…";
+      markSent();
+      loadPdfLib().then(makePdf).then(function (blob) {
+        var file = typeof File === "function" ? new File([blob], name, { type: "application/pdf" }) : null;
+        var phone = window.matchMedia && matchMedia("(pointer: coarse)").matches;
+        if (phone && file && navigator.canShare && navigator.canShare({ files: [file] })) {
+          // Sharing needs a fresh tap, so offer it once the PDF is ready.
+          toast("PDF ready", { label: "Share or save", fn: function () {
+            navigator.share({ files: [file], title: name }).catch(function () {});
+          } });
+        } else {
+          saveBlob(blob, name); toast("Downloaded " + name);
+        }
+      }).catch(function () {
+        toast("Couldn't make the PDF. Check your connection and try again.");
+      }).then(function () { btn.disabled = false; btn.textContent = "Download PDF"; });
+    });
+  } else {
+    $("#hostedNote").hidden = false;
+  }
 
   var toastTimer;
   function toast(msg, action) {

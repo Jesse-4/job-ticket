@@ -3,7 +3,8 @@
 A single-file web app for plumbers, electricians, handymen, cleaners, landscapers, painters, and other small service businesses. They fill in a job and get a clean, professional quote or invoice they can print, save as a PDF, or paste into a text or email.
 
 **Files**
-- `index.html` is the full app. Host this one. It includes a Print / Save PDF button.
+- `index.html` is the full app. Host this one. It has **Download PDF** (a share sheet on phones) and **Print** buttons. Printed and downloaded tickets never show the Draft, Sent or Overdue stamp; only PAID appears.
+- `lib/html2pdf.bundle.min.js` makes the PDFs (html2pdf.js 0.10.1, MIT license).
 - `app.html` is the same app formatted for the Claude artifact preview.
 
 Nothing else is needed: no server and no database. Each customer's data stays in their own browser.
@@ -36,6 +37,8 @@ var CONTACT = "";   // where buyers get their unlock code, e.g. a phone number o
 1. Make a free Stripe account and create a **Payment Link** for your price. Under "After payment", show a message like: "Thanks! Your unlock code will be sent to your email within a few hours."
 2. Paste the link into `PAY_URL`.
 3. When a payment comes in, email or text the buyer one code from `private/unlock-codes.txt` and cross it off. To make more codes, run `node tools/make-codes.js 20`.
+
+To test the free plan again yourself, enter the owner test code at the top of `private/unlock-codes.txt`. It puts you back to 3 unused free invoices. Make another with `node tools/make-codes.js --reset`.
 
 `private/` is in `.gitignore`, so your codes never go to GitHub.
 
