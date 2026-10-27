@@ -462,7 +462,7 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
           <button type="button" id="delBtn" class="link danger">Delete this ticket</button>
         </div>
         <div id="confirmDel" class="confirm" hidden>
-          Delete this ticket for good?
+          <span id="delMsg">Delete this ticket for good?</span>
           <button type="button" id="delYes" class="danger">Delete</button>
           <button type="button" id="delNo">Keep it</button>
         </div>
@@ -708,7 +708,6 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
 
   var docs = load(KEY_DOCS, null);
   if (!docs || !docs.length) {
-    var past = function (days) { var d = new Date(); d.setDate(d.getDate() - days); return d.toISOString().slice(0, 10); };
     docs = [{
       id: uid(), example: true, kind: "invoice", status: "sent", number: "INV-1001", date: today(), termsDays: 14,
       job: "Replace water heater in garage", currency: "USD",
@@ -722,19 +721,6 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
       discount: 50, taxRate: 7.25, deposit: 300,
       notes: "Thanks for choosing us. 1-year labor warranty on this install.",
       payInfo: biz.payInfo
-    }, {
-      id: uid(), example: true, kind: "invoice", status: "sent", number: "INV-1000", date: past(24), termsDays: 7,
-      job: "Clear kitchen drain", currency: "USD",
-      client: { name: "Marcus Lee", contact: "(555) 448-2290", address: "902 Olive Ave\nFresno, CA 93728" },
-      items: [{ desc: "Service call", qty: 1, unit: "visit", rate: 79 }, { desc: "Labor: snake & clear drain", qty: 1, unit: "hr", rate: 95 }],
-      discount: 0, taxRate: 7.25, deposit: 0, notes: "Thank you for your business.", payInfo: biz.payInfo
-    }, {
-      id: uid(), example: true, kind: "quote", status: "sent", number: "Q-101", date: past(3), termsDays: 30,
-      job: "Toilet replacement, upstairs bath", currency: "USD",
-      client: { name: "Priya Shah", contact: "priya.shah@mail.example", address: "15 Maple Ln\nClovis, CA 93611" },
-      items: [{ desc: "Toilet, standard height", qty: 1, unit: "ea", rate: 264 }, { desc: "Wax ring, bolts & supply line", qty: 1, unit: "ea", rate: 30 },
-        { desc: "Labor: remove & install toilet", qty: 2, unit: "hr", rate: 95 }, { desc: "Disposal of old toilet", qty: 1, unit: "ea", rate: 65 }],
-      discount: 0, taxRate: 7.25, deposit: 100, notes: "Price includes labor and materials listed.", payInfo: ""
     }];
   }
   // Free plan: count invoices created (deleting one doesn't give it back).
@@ -820,7 +806,7 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
   function canMakeInvoice() { return isPro() || freeLeft() > 0; }
   // Count a ticket the first time it becomes an invoice. Returns false (and shows the upgrade) when out of free invoices.
   function claimInvoice(d) {
-    if (d.counted || d.example || isPro()) { d.counted = true; return true; }
+    if (d.counted || isPro()) { d.counted = true; return true; }
     if (!canMakeInvoice()) { openPaywall(true); return false; }
     plan.used++; d.counted = true; renderPlan();
     return true;
@@ -1127,8 +1113,20 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
   }
 
   // ---------- changes
+  // The untouched example, so an edit can be undone when there are no free invoices left.
+  var exampleSnap = null;
+  function snapExample() { exampleSnap = doc.example ? JSON.stringify(doc) : null; }
   function docChanged() {
-    doc.example = false;
+    if (doc.example) {
+      if (doc.kind === "invoice" && !claimInvoice(doc)) {
+        var orig = JSON.parse(exampleSnap);
+        Object.keys(doc).forEach(function (k) { delete doc[k]; });
+        Object.keys(orig).forEach(function (k) { doc[k] = orig[k]; });
+        renderTicketView(); return;
+      }
+      doc.example = false; exampleSnap = null;
+      if (doc.kind === "invoice") toast("The example is now your own invoice" + freeNote());
+    }
     persist(); renderPreview(); renderMinWarn(); updateBar(); renderBadge();
   }
   function handleField(el) {
@@ -1167,7 +1165,7 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
   $("#form").addEventListener("submit", function (e) { e.preventDefault(); });
 
   function openDoc(d, toTicket) {
-    doc = d; tplOpen = !hasLines(d); selectedTpl = null;
+    doc = d; tplOpen = !hasLines(d); selectedTpl = null; snapExample();
     $("#confirmDel").hidden = true; $("#tplSaveRow").hidden = true;
     $("#main").classList.remove("show-preview"); $("#mToggle").textContent = "Preview ticket";
     persist();
@@ -1291,12 +1289,17 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
     doc.status = "paid"; // the quote is now accepted
     docs.push(d); openDoc(d); toast("Invoice " + d.number + " created. Quote marked accepted" + (freeNote() || "."));
   });
-  $("#delBtn").addEventListener("click", function () { $("#confirmDel").hidden = false; });
+  $("#delBtn").addEventListener("click", function () {
+    $("#delMsg").textContent = doc.counted && !isPro()
+      ? "Delete this invoice for good? It still counts as one of your " + FREE_INVOICES + " free invoices."
+      : "Delete this ticket for good?";
+    $("#confirmDel").hidden = false;
+  });
   $("#delNo").addEventListener("click", function () { $("#confirmDel").hidden = true; });
   $("#delYes").addEventListener("click", function () {
     var gone = doc.number;
     docs = docs.filter(function (d) { return d.id !== doc.id; });
-    if (!docs.length) docs.push(blank("invoice"));
+    if (!docs.length) docs.push(blank("quote"));
     openDoc(docs[docs.length - 1]); renderBadge(); toast("Deleted " + gone);
   });
 
@@ -1365,7 +1368,7 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
   var toastTimer;
   function toast(msg) { var t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.hidden = true; }, 2600); }
 
-  tplOpen = !hasLines(doc);
+  tplOpen = !hasLines(doc); snapExample();
   renderBadge(); renderPlan();
   showView(location.hash.slice(1), true);
 })();
