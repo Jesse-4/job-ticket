@@ -1,0 +1,1372 @@
+<title>Job Ticket</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: tabbed app. Ticket view = order form left, carbon-copy ticket right (one pane at a time on phones);
+   All tickets = money summary + list; My rates = plain-language price book; Business = profile. */
+:root {
+  --ground: #eceef4;
+  --panel: #ffffff;
+  --ink: #161a2b;
+  --muted: #5b6277;
+  --line: #d6dae5;
+  --carbon: #2f45c4;
+  --carbon-soft: #e4e8fc;
+  --on-carbon: #ffffff;
+  --sheet: #fffdf2;
+  --sheet-ink: #1b1f30;
+  --sheet-line: #e6e1c8;
+  --sheet-muted: #6b6a5c;
+  --paid: #1d7a4b;
+  --sent: #2f45c4;
+  --draft: #a4561c;
+  --danger: #b42318;
+  --f-display: "Bricolage Grotesque", "Arial Narrow", system-ui, sans-serif;
+  --f-body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #0f121a; --panel: #171b27; --ink: #e8eaf2; --muted: #9ba2b6; --line: #2a3043;
+    --carbon: #8d9cff; --carbon-soft: #222a4c; --on-carbon: #0f121a;
+    --paid: #4cc38a; --sent: #8d9cff; --draft: #f0a35e; --danger: #ff7b6e;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --ground: #0f121a; --panel: #171b27; --ink: #e8eaf2; --muted: #9ba2b6; --line: #2a3043;
+  --carbon: #8d9cff; --carbon-soft: #222a4c; --on-carbon: #0f121a;
+  --paid: #4cc38a; --sent: #8d9cff; --draft: #f0a35e; --danger: #ff7b6e;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--ground); color: var(--ink);
+  font-family: var(--f-body); font-size: 15px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 16px 48px;
+}
+.wrap { max-width: 1240px; margin: 0 auto; display: grid; gap: 18px; }
+.view { display: grid; gap: 18px; min-width: 0; }
+h2.view-title { font-family: var(--f-display); font-weight: 800; font-size: 26px; letter-spacing: -0.015em; margin: 0; text-wrap: balance; }
+.view-intro { margin: 4px 0 0; color: var(--muted); max-width: 64ch; }
+
+/* Header + tabs */
+.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; justify-content: space-between; }
+.brand { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.brand h1 { font-family: var(--f-display); font-weight: 800; font-size: 26px; letter-spacing: -0.02em; margin: 0; }
+.brand span { color: var(--muted); font-size: 13px; }
+.bar-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
+.tabs button {
+  border: 0; border-radius: 0; background: transparent; color: var(--muted); padding: 10px 12px 11px;
+  border-bottom: 2.5px solid transparent; margin-bottom: -1px; white-space: nowrap; font-weight: 500;
+}
+.tabs button:hover { color: var(--ink); border-color: transparent; }
+.tabs button[aria-current="page"] { color: var(--ink); border-bottom-color: var(--carbon); }
+.tabs .badge { font: 500 11px/1 var(--f-mono); background: var(--danger); color: var(--panel); border-radius: 99px; padding: 2px 6px; margin-left: 4px; }
+
+button, .btn {
+  font: 500 14px/1 var(--f-body); color: var(--ink); background: var(--panel);
+  border: 1px solid var(--line); border-radius: 8px; padding: 9px 13px; cursor: pointer;
+}
+button:hover { border-color: var(--carbon); }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--carbon); outline-offset: 1px;
+}
+button.primary { background: var(--carbon); color: var(--on-carbon); border-color: var(--carbon); }
+button.ghost { background: transparent; }
+button.danger { color: var(--danger); }
+button.link { border: 0; background: none; padding: 4px 2px; color: var(--carbon); text-decoration: underline; text-underline-offset: 3px; }
+button.link.danger { color: var(--danger); }
+
+/* Panels & fields */
+.panel {
+  margin: 0; border: 1px solid var(--line); border-radius: 12px; background: var(--panel);
+  padding: 14px 16px 16px; display: grid; gap: 12px; min-width: 0; container-type: inline-size;
+}
+.panel-title { font: 500 11px/1 var(--f-mono); text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); margin: 0; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+@container (max-width: 460px) { .grid2, .grid3 { grid-template-columns: minmax(0, 1fr); } }
+label { display: grid; gap: 4px; font-size: 12.5px; color: var(--muted); min-width: 0; }
+input, select, textarea {
+  font: 400 14.5px/1.3 var(--f-body); color: var(--ink); background: var(--ground);
+  border: 1px solid var(--line); border-radius: 7px; padding: 8px 10px; width: 100%; min-width: 0;
+}
+textarea { resize: vertical; min-height: 62px; }
+input[type="number"] { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.money-in { position: relative; display: block; }
+.money-in::before { content: attr(data-sym); position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); font-family: var(--f-mono); font-size: 14px; pointer-events: none; }
+.money-in input { padding-left: 24px; }
+.money-in.pct::before { left: auto; right: 10px; }
+.money-in.pct input { padding-left: 10px; padding-right: 26px; }
+
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 9px; padding: 3px; background: var(--ground); gap: 2px; flex-wrap: wrap; }
+.seg button { border: 0; background: transparent; padding: 7px 12px; border-radius: 6px; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--panel); color: var(--ink); box-shadow: 0 1px 2px rgb(0 0 0 / 0.12); }
+.row-top { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips button { font-size: 13px; padding: 6px 11px; border-radius: 99px; }
+.chips button[aria-pressed="true"] { background: var(--ink); color: var(--panel); border-color: var(--ink); }
+.hint { margin: 0; font-size: 12.5px; color: var(--muted); max-width: 64ch; }
+
+/* Welcome */
+.welcome { background: var(--carbon-soft); border-color: transparent; }
+.welcome h3 { font-family: var(--f-display); font-weight: 800; font-size: 20px; margin: 0; }
+.welcome p { margin: 0; color: var(--muted); }
+.welcome .grid3 { align-items: end; }
+.welcome input, .welcome select { background: var(--panel); }
+
+/* Ticket view */
+.main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); gap: 20px; align-items: start; }
+.form { display: grid; gap: 14px; min-width: 0; }
+
+.items { display: grid; gap: 8px; }
+.item, .items-head { display: grid; grid-template-columns: minmax(0, 1fr) 60px 74px 86px 84px 30px; gap: 6px; align-items: center; }
+.items-head { font: 500 11px/1 var(--f-mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.items-head .r, .item .amt { text-align: right; }
+.item .amt { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: 13px; white-space: nowrap; }
+.item .x, .x { padding: 8px 0; color: var(--muted); border: 0; background: none; }
+@container (max-width: 520px) {
+  .items-head { display: none; }
+  .item { grid-template-columns: repeat(4, minmax(0, 1fr)); padding-bottom: 10px; border-bottom: 1px dashed var(--line); }
+  .item .desc { grid-column: 1 / span 3; }
+  .item .x { grid-row: 1; grid-column: 4; justify-self: end; padding-inline: 10px; }
+}
+.quick { display: flex; flex-wrap: wrap; gap: 6px; }
+.quick button { font-size: 13px; padding: 7px 10px; }
+.subrow { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; }
+
+.tpl { display: grid; gap: 10px; padding: 12px; background: var(--ground); border-radius: 10px; }
+.tpl-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.tpl-top strong { font-size: 14px; }
+.tpl-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 6px; }
+.tpl-card { display: grid; gap: 3px; text-align: left; padding: 10px 11px; background: var(--panel); line-height: 1.3; }
+.tpl-card .nm { font-weight: 500; }
+.tpl-card .pr { font: 400 12.5px/1.2 var(--f-mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.tpl-card[aria-pressed="true"] { border-color: var(--carbon); box-shadow: inset 0 0 0 1px var(--carbon); }
+.tpl-preview { font-size: 13px; color: var(--muted); display: grid; gap: 4px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+.tpl-preview .ln { display: flex; justify-content: space-between; gap: 12px; }
+.tpl-preview .ln span:last-child, .tpl-preview .sum span:last-child { font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tpl-preview .sum { display: flex; justify-content: space-between; gap: 12px; color: var(--ink); font-weight: 600; border-top: 1px solid var(--line); padding-top: 6px; margin-top: 2px; }
+.inline-form { display: flex; flex-wrap: wrap; gap: 8px; }
+.inline-form input { flex: 1 1 220px; }
+.warn { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; font-size: 13.5px; color: var(--draft); border: 1px solid currentColor; border-radius: 8px; padding: 8px 10px; }
+.warn button { font-size: 13px; padding: 6px 10px; }
+.confirm { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 13.5px; color: var(--danger); }
+
+/* The ticket */
+.preview { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); display: grid; gap: 10px; min-width: 0; }
+.preview-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+.preview-tools .btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.save-state { font-size: 12.5px; color: var(--muted); }
+.example-note { font-size: 12.5px; color: var(--draft); }
+.ticket {
+  background: var(--sheet); color: var(--sheet-ink); border-radius: 4px;
+  box-shadow: 0 1px 0 var(--sheet-line), 0 10px 30px -12px rgb(20 24 40 / 0.35);
+  position: relative; overflow: hidden; min-width: 0;
+}
+.perf { height: 14px; background: radial-gradient(circle at 7px 7px, var(--ground) 3.2px, transparent 3.6px) 0 0 / 14px 14px repeat-x; border-bottom: 1px dashed var(--sheet-line); }
+.t-body { padding: 26px 28px 22px; display: grid; gap: 20px; container-type: inline-size; }
+.t-head { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+.t-biz { display: grid; gap: 2px; font-size: 13px; color: var(--sheet-muted); min-width: 0; }
+.t-biz img { max-height: 46px; max-width: 160px; margin-bottom: 6px; object-fit: contain; }
+.t-biz strong { color: var(--sheet-ink); font-size: 16px; font-weight: 600; }
+.t-kind { text-align: right; }
+.t-kind h2 { font-family: var(--f-display); font-weight: 800; font-size: 34px; letter-spacing: 0.01em; margin: 0; line-height: 1; text-transform: uppercase; }
+.t-kind .no { font-family: var(--f-mono); font-size: 14px; color: var(--sheet-muted); margin-top: 6px; }
+.t-meta { display: grid; grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(0, 1fr)); gap: 14px; border-block: 1px solid var(--sheet-line); padding-block: 12px; }
+.t-meta .k { font: 500 10.5px/1 var(--f-mono); text-transform: uppercase; letter-spacing: 0.09em; color: var(--sheet-muted); margin-bottom: 5px; }
+.t-meta .v { font-size: 13.5px; white-space: pre-line; overflow-wrap: anywhere; }
+.t-meta .v.mono { font-family: var(--f-mono); }
+.t-table-wrap { overflow-x: auto; }
+.ticket table { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 400px; }
+.ticket th { font: 500 10.5px/1 var(--f-mono); text-transform: uppercase; letter-spacing: 0.09em; color: var(--sheet-muted); text-align: left; padding: 0 6px 8px; border-bottom: 1.5px solid var(--sheet-ink); }
+.ticket td { padding: 9px 6px; border-bottom: 1px solid var(--sheet-line); vertical-align: top; }
+.ticket td.n, .ticket th.n { text-align: right; font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.t-foot { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 250px); gap: 20px; align-items: start; }
+.t-notes { font-size: 13px; color: var(--sheet-muted); white-space: pre-line; display: grid; gap: 10px; overflow-wrap: anywhere; }
+.t-notes b { display: block; font: 500 10.5px/1 var(--f-mono); text-transform: uppercase; letter-spacing: 0.09em; margin-bottom: 4px; color: var(--sheet-ink); }
+.totals { display: grid; gap: 6px; font-size: 13.5px; }
+.totals div { display: flex; justify-content: space-between; gap: 12px; }
+.totals span:last-child { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.totals .grand { border-top: 1.5px solid var(--sheet-ink); padding-top: 8px; margin-top: 2px; font-weight: 600; font-size: 16px; }
+.totals .due { background: var(--sheet-ink); color: var(--sheet); padding: 8px 10px; border-radius: 3px; font-weight: 600; }
+.made { font: 400 11px/1 var(--f-mono); color: var(--sheet-muted); text-align: center; letter-spacing: 0.04em; padding-bottom: 14px; }
+.sign { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; font-size: 11.5px; color: var(--sheet-muted); }
+.sign div { border-top: 1px solid var(--sheet-ink); padding-top: 5px; }
+.stamp {
+  display: inline-block; margin-top: 14px; transform: rotate(-8deg);
+  font: 800 28px/1 var(--f-display); letter-spacing: 0.08em; text-transform: uppercase;
+  border: 3px solid currentColor; border-radius: 6px; padding: 6px 12px; opacity: 0.8; pointer-events: none;
+}
+.stamp.paid { color: #1d7a4b; } .stamp.sent { color: #2f45c4; } .stamp.draft { color: #a4561c; opacity: 0.45; } .stamp.overdue { color: #b42318; }
+@container (max-width: 500px) {
+  .t-body { padding: 20px 16px; }
+  .t-meta { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .t-meta > :first-child { grid-column: 1 / -1; }
+  .t-foot { grid-template-columns: minmax(0, 1fr); }
+  .stamp { font-size: 20px; }
+}
+.copybox { width: 100%; min-height: 160px; font-family: var(--f-mono); font-size: 12.5px; }
+
+/* Phone: one pane at a time + bottom bar */
+.mbar { display: none; }
+@media (max-width: 920px) {
+  .main { grid-template-columns: minmax(0, 1fr); }
+  .preview { position: static; }
+  .main:not(.show-preview) .preview { display: none; }
+  .main.show-preview .form { display: none; }
+  body.on-ticket { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+  body.on-ticket .mbar {
+    display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 15;
+    align-items: center; justify-content: space-between; gap: 12px;
+    padding: 10px max(16px, env(safe-area-inset-right, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+    background: var(--panel); border-top: 1px solid var(--line); box-shadow: 0 -6px 20px -12px rgb(0 0 0 / 0.3);
+  }
+  .mbar .k { font: 500 11px/1 var(--f-mono); text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); display: block; margin-bottom: 3px; }
+  .mbar b { font: 500 19px/1 var(--f-mono); font-variant-numeric: tabular-nums; }
+  .mbar button { padding: 12px 16px; }
+}
+
+/* All tickets */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.tile { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 4px; text-align: left; }
+.tile .k { font: 500 11px/1 var(--f-mono); text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); }
+.tile .v { font: 500 24px/1.1 var(--f-mono); font-variant-numeric: tabular-nums; }
+.tile .s { font-size: 12.5px; color: var(--muted); }
+.tile.alert { border-color: var(--danger); }
+.tile.alert .v { color: var(--danger); }
+.list { display: grid; gap: 6px; }
+.lrow {
+  display: grid; grid-template-columns: 92px minmax(0, 1fr) 120px 96px 110px; gap: 12px; align-items: center;
+  text-align: left; width: 100%; padding: 12px 14px; line-height: 1.3;
+}
+.lrow .num { font-family: var(--f-mono); font-size: 13px; color: var(--muted); }
+.lrow .who { min-width: 0; }
+.lrow .who strong { display: block; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lrow .who span { display: block; font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lrow .when { font-size: 13px; color: var(--muted); }
+.lrow .amt { font-family: var(--f-mono); font-variant-numeric: tabular-nums; text-align: right; }
+.lrow.ex { border-style: dashed; }
+@media (max-width: 640px) {
+  .lrow { grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; }
+  .lrow .num { grid-column: 1; grid-row: 1; }
+  .lrow .pillcell { grid-column: 2; grid-row: 1; justify-self: end; }
+  .lrow .who { grid-column: 1; grid-row: 2; }
+  .lrow .amt { grid-column: 2; grid-row: 2; }
+  .lrow .when { grid-column: 1 / -1; grid-row: 3; }
+}
+.pill { display: inline-block; font: 500 10.5px/1 var(--f-mono); text-transform: uppercase; letter-spacing: 0.08em; padding: 4px 8px; border-radius: 99px; border: 1px solid currentColor; white-space: nowrap; }
+.pill.draft { color: var(--draft); } .pill.sent { color: var(--sent); } .pill.paid { color: var(--paid); }
+.pill.overdue { color: var(--panel); background: var(--danger); border-color: var(--danger); }
+.empty { color: var(--muted); font-size: 14px; padding: 18px; text-align: center; border: 1px dashed var(--line); border-radius: 10px; }
+
+/* My rates */
+.rates-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 920px) { .rates-layout { grid-template-columns: minmax(0, 1fr); } }
+.explain { background: var(--carbon-soft); border-radius: 12px; padding: 14px 16px; display: grid; gap: 6px; }
+.explain strong { font-size: 14px; }
+.explain .math { font-family: var(--f-mono); font-size: 13.5px; font-variant-numeric: tabular-nums; }
+.rate { display: grid; grid-template-columns: minmax(0, 1fr) 128px; gap: 4px 16px; align-items: center; padding-block: 12px; border-top: 1px solid var(--line); }
+.rate:first-of-type { border-top: 0; padding-top: 2px; }
+.rate .nm { font-weight: 500; font-size: 14.5px; color: var(--ink); }
+.rate .ds { font-size: 12.5px; color: var(--muted); grid-column: 1; }
+.rate .money-in { grid-column: 2; grid-row: 1 / span 2; }
+@container (max-width: 380px) { .rate { grid-template-columns: minmax(0, 1fr); } .rate .money-in { grid-column: 1; grid-row: auto; } }
+.bk-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
+.bk-card { border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: grid; gap: 10px; background: var(--ground); min-width: 0; }
+.bk-card input, .bk-card select { background: var(--panel); }
+.bk-top { display: flex; gap: 8px; align-items: center; }
+.bk-top input { font-weight: 500; }
+.bk-card .seg { background: var(--panel); }
+.bk-card .seg button { font-size: 13px; padding: 6px 10px; }
+.bk-card .seg button[aria-pressed="true"] { background: var(--carbon-soft); color: var(--ink); box-shadow: none; }
+.bk-fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 8px; }
+.bk-result { font-size: 13px; color: var(--muted); }
+.bk-result b { color: var(--ink); font-family: var(--f-mono); font-weight: 500; }
+
+.logo-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.logo-row img { height: 36px; border-radius: 4px; }
+.narrow { max-width: 720px; display: grid; gap: 14px; }
+
+/* Plan & upgrade */
+.plan-chip { font-size: 13px; border-radius: 99px; padding: 8px 12px; background: var(--carbon-soft); border-color: transparent; }
+.plan-chip.out { background: transparent; border-color: var(--danger); color: var(--danger); }
+a.btn { text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color: var(--carbon); }
+.overlay {
+  position: fixed; inset: 0; z-index: 30; background: rgb(10 12 20 / 0.55); display: grid; place-items: center;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+}
+.paywall { background: var(--panel); color: var(--ink); border-radius: 14px; max-width: 440px; width: 100%; max-height: 100%; overflow: auto; padding: 22px; display: grid; gap: 14px; box-shadow: 0 20px 60px -20px rgb(0 0 0 / 0.5); }
+.paywall h3 { font-family: var(--f-display); font-weight: 800; font-size: 23px; line-height: 1.15; margin: 0; text-wrap: balance; }
+.paywall p { margin: 0; color: var(--muted); }
+.perks { margin: 0; padding: 0; list-style: none; display: grid; gap: 7px; }
+.perks li { display: flex; gap: 9px; align-items: baseline; }
+.perks li::before { content: "✓"; color: var(--paid); font-weight: 600; }
+.price { font: 500 21px/1.2 var(--f-mono); }
+.price small { font: 400 13px/1.3 var(--f-body); color: var(--muted); display: block; margin-top: 3px; }
+.code-box { display: grid; gap: 8px; border-top: 1px solid var(--line); padding-top: 14px; }
+.code-row { display: flex; gap: 8px; }
+.code-row input { font-family: var(--f-mono); text-transform: uppercase; letter-spacing: 0.06em; }
+.code-err { color: var(--danger); font-size: 13px; }
+.toast {
+  position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 92px); transform: translateX(-50%);
+  background: var(--ink); color: var(--ground); padding: 10px 16px; border-radius: 8px; font-size: 14px; z-index: 20;
+  max-width: calc(100vw - 32px);
+}
+@media (min-width: 921px) { .toast { bottom: calc(env(safe-area-inset-bottom, 0px) + 22px); } }
+
+@media print {
+  body { background: #fff; padding: 0; }
+  .bar, .tabs, .form, .preview-tools, .toast, .mbar, .welcome, .example-note { display: none !important; }
+  .main { display: block; }
+  .main .preview { display: block !important; position: static; }
+  .ticket { box-shadow: none; }
+  .perf { display: none; }
+  .stamp.draft { display: none; }
+}
+</style>
+
+<div class="wrap">
+  <header class="bar">
+    <div class="brand"><h1>Job Ticket</h1><span>Quotes &amp; invoices for the trades</span></div>
+    <div class="bar-actions">
+      <button id="planChip" type="button" class="plan-chip" hidden></button>
+      <button id="newQuote" type="button">+ New quote</button>
+      <button id="newInvoice" type="button" class="primary">+ New invoice</button>
+    </div>
+  </header>
+
+  <nav class="tabs" aria-label="Sections">
+    <button type="button" data-view="ticket" id="tab-ticket">Ticket</button>
+    <button type="button" data-view="tickets" id="tab-tickets">All tickets<span class="badge" id="overdueBadge" hidden></span></button>
+    <button type="button" data-view="rates" id="tab-rates">My rates</button>
+    <button type="button" data-view="business" id="tab-business">Business</button>
+  </nav>
+
+  <!-- ============ TICKET ============ -->
+  <section id="view-ticket" class="view" style="gap:14px">
+    <div class="panel welcome" id="welcome" hidden>
+      <h3>Set up in 30 seconds</h3>
+      <p>Tell us your trade and what you charge per hour. We'll fill in typical rates you can change anytime, and show job templates for your trade.</p>
+      <div class="grid3">
+        <label>Your trade
+          <select id="w-trade">
+            <option>Plumbing</option><option>Electrical</option><option>Handyman</option>
+            <option>Cleaning</option><option>Landscaping</option><option>Painting</option>
+          </select>
+        </label>
+        <label>What you charge per hour
+          <span class="money-in" data-sym="$"><input id="w-rate" type="number" min="0" step="1" value="95"></span>
+        </label>
+        <label>Business name<input id="w-name" placeholder="e.g. Rivera Plumbing"></label>
+      </div>
+      <div class="row-top" style="justify-content:flex-start">
+        <button type="button" id="w-save" class="primary">Save and start my first quote</button>
+        <button type="button" id="w-skip" class="link">Skip, I'm just looking</button>
+      </div>
+    </div>
+
+    <div class="main" id="main">
+      <form class="form" id="form" autocomplete="off">
+        <div class="panel">
+          <div class="row-top">
+            <div class="seg" role="group" aria-label="Document type">
+              <button type="button" data-kind="quote">Quote</button>
+              <button type="button" data-kind="invoice">Invoice</button>
+            </div>
+            <div class="seg" role="group" aria-label="Status">
+              <button type="button" data-status="draft">Draft</button>
+              <button type="button" data-status="sent">Sent</button>
+              <button type="button" data-status="paid" id="stPaid">Paid</button>
+            </div>
+          </div>
+          <div class="grid3">
+            <label>Number<input id="f-number" data-path="number"></label>
+            <label>Date<input id="f-date" type="date" data-path="date"></label>
+            <label><span id="termsLabel">Payment terms</span>
+              <select id="f-terms" data-path="termsDays" data-num>
+                <option value="0">Due on receipt</option>
+                <option value="7">Net 7</option>
+                <option value="14">Net 14</option>
+                <option value="30">Net 30</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div class="panel">
+          <p class="panel-title">Customer</p>
+          <div class="grid2">
+            <label>Name<input id="f-cname" data-path="client.name" placeholder="Who is this for?"></label>
+            <label>Phone or email<input id="f-ccontact" data-path="client.contact"></label>
+          </div>
+          <div class="grid2">
+            <label>Job address<textarea id="f-caddr" data-path="client.address" rows="2"></textarea></label>
+            <label>Job description<textarea id="f-job" data-path="job" rows="2" placeholder="e.g. Kitchen sink replacement"></textarea></label>
+          </div>
+        </div>
+
+        <div class="panel">
+          <p class="panel-title">Work &amp; materials</p>
+          <div class="tpl" id="tplBox">
+            <div class="tpl-top"><strong>Start from a job template</strong><button type="button" class="link" id="tplHide">Hide</button></div>
+            <div class="chips" id="tplTrades"></div>
+            <div class="tpl-cards" id="tplCards"></div>
+            <div class="tpl-preview" id="tplPreview" hidden></div>
+          </div>
+          <datalist id="bookList"></datalist>
+          <div class="items-head"><span>Description</span><span>Qty</span><span>Unit</span><span>Rate</span><span class="r">Amount</span><span></span></div>
+          <div class="items" id="items"></div>
+          <div class="quick">
+            <button type="button" id="addLine">+ Line</button>
+            <button type="button" data-quick="labor">+ Labor hour</button>
+            <button type="button" data-quick="trip">+ Service call</button>
+            <button type="button" data-quick="disposal">+ Disposal</button>
+            <button type="button" id="tplShow" class="ghost">+ From a template</button>
+          </div>
+          <div id="minWarn" class="warn" hidden></div>
+          <div class="grid3">
+            <label>Discount<span class="money-in" data-sym="$" id="sym-disc"><input id="f-discount" type="number" step="0.01" min="0" data-path="discount" data-num></span></label>
+            <label>Sales tax<span class="money-in pct" data-sym="%"><input id="f-tax" type="number" step="0.01" min="0" data-path="taxRate" data-num></span></label>
+            <label><span id="depLabel">Deposit received</span><span class="money-in" data-sym="$" id="sym-dep"><input id="f-deposit" type="number" step="0.01" min="0" data-path="deposit" data-num></span></label>
+          </div>
+          <div class="subrow">
+            <button type="button" id="tplSaveOpen" class="link">Save these lines as a template</button>
+          </div>
+          <div id="tplSaveRow" class="inline-form" hidden>
+            <input id="tplName" placeholder="Template name, e.g. Tankless heater install" aria-label="Template name">
+            <button type="button" id="tplSaveYes" class="primary">Save template</button>
+            <button type="button" id="tplSaveNo">Cancel</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <p class="panel-title">Notes</p>
+          <label>Note to customer<textarea id="f-notes" data-path="notes" rows="2"></textarea></label>
+          <label>How to pay you<textarea id="f-pay" data-path="payInfo" rows="2" placeholder="Zelle, Venmo, check payable to…"></textarea></label>
+        </div>
+
+        <div class="row-top">
+          <div class="subrow">
+            <button type="button" id="dupBtn" class="ghost">Duplicate</button>
+            <button type="button" id="convertBtn" class="ghost">Turn into invoice</button>
+          </div>
+          <button type="button" id="delBtn" class="link danger">Delete this ticket</button>
+        </div>
+        <div id="confirmDel" class="confirm" hidden>
+          Delete this ticket for good?
+          <button type="button" id="delYes" class="danger">Delete</button>
+          <button type="button" id="delNo">Keep it</button>
+        </div>
+      </form>
+
+      <aside class="preview" aria-label="Ticket preview">
+        <div class="preview-tools">
+          <div class="btns">
+            <button id="copyText" type="button" class="primary">Copy for text or email</button>
+            <button id="printBtn" type="button" hidden>Print / Save PDF</button>
+          </div>
+          <span class="save-state" id="saveState">Saved on this device</span>
+        </div>
+        <span class="example-note" id="exampleNote">This is an example ticket. Edit it, or start your own with + New invoice.</span>
+        <div class="ticket" id="ticket"></div>
+        <div id="copyWrap" hidden>
+          <label>Your browser blocked copying. Select this text and copy it:
+            <textarea id="copyBox" class="copybox" readonly></textarea></label>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============ ALL TICKETS ============ -->
+  <section id="view-tickets" class="view" hidden>
+    <div><h2 class="view-title">All tickets</h2><p class="view-intro">Who owes you, what's late, and which quotes are still waiting on a yes. Tap a ticket to open it.</p></div>
+    <div class="tiles" id="tiles"></div>
+    <div class="chips" id="filters"></div>
+    <div class="list" id="list"></div>
+  </section>
+
+  <!-- ============ MY RATES ============ -->
+  <section id="view-rates" class="view" hidden>
+    <div>
+      <h2 class="view-title">My rates</h2>
+      <p class="view-intro">Enter what you charge once. Every template, quick-add button and saved item prices itself from these numbers, so you never re-type your rates. Change a rate here and every template updates.</p>
+    </div>
+    <div class="explain">
+      <strong>How a price is worked out with your rates</strong>
+      <span class="hint">Example job: 2 hours of work and parts that cost you $50.</span>
+      <span class="math" id="rateExample"></span>
+    </div>
+    <div class="rates-layout">
+      <div class="panel">
+        <p class="panel-title">Your rates</p>
+        <div class="rate"><span class="nm">Hourly labor rate</span><span class="ds">What you charge the customer per hour of work.</span>
+          <span class="money-in" data-sym="$"><input id="pb-labor" type="number" step="1" min="0" data-book="laborRate" aria-label="Hourly labor rate"></span></div>
+        <div class="rate"><span class="nm">Markup on parts</span><span class="ds" id="markupDesc">Added on top of what you pay for parts and materials.</span>
+          <span class="money-in pct" data-sym="%"><input id="pb-markup" type="number" step="1" min="0" data-book="markup" aria-label="Markup on parts"></span></div>
+        <div class="rate"><span class="nm">Service call fee</span><span class="ds">Charged once for showing up. Use 0 if you don't charge one.</span>
+          <span class="money-in" data-sym="$"><input id="pb-trip" type="number" step="1" min="0" data-book="tripCharge" aria-label="Service call fee"></span></div>
+        <div class="rate"><span class="nm">Disposal / haul-away fee</span><span class="ds">For taking away old fixtures, debris or green waste.</span>
+          <span class="money-in" data-sym="$"><input id="pb-disp" type="number" step="1" min="0" data-book="disposalFee" aria-label="Disposal fee"></span></div>
+        <div class="rate"><span class="nm">Minimum job charge</span><span class="ds">The least you'll do a job for. You'll get a warning when a ticket comes in under it.</span>
+          <span class="money-in" data-sym="$"><input id="pb-min" type="number" step="1" min="0" data-book="minCharge" aria-label="Minimum job charge"></span></div>
+        <div class="rate"><span class="nm">Sales tax</span><span class="ds">Filled in on every new ticket. Check your state's rules for labor vs. parts.</span>
+          <span class="money-in pct" data-sym="%"><input id="pb-tax" type="number" step="0.01" min="0" data-book="taxRate" aria-label="Sales tax"></span></div>
+      </div>
+      <div class="panel">
+        <p class="panel-title">Parts &amp; services you use often</p>
+        <p class="hint">Save anything you charge for again and again. On a ticket, start typing its name in a line and the price fills in. For parts, enter what <em>you</em> pay; your markup is added for you.</p>
+        <div class="bk-cards" id="book"></div>
+        <div><button type="button" id="bookAdd">+ Add a part or service</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ BUSINESS ============ -->
+  <section id="view-business" class="view" hidden>
+    <div><h2 class="view-title">Your business</h2><p class="view-intro">This appears at the top of every quote and invoice.</p></div>
+    <div class="narrow">
+      <div class="panel">
+        <div class="grid2">
+          <label>Business name<input id="b-name" data-biz="name"></label>
+          <label>Phone<input id="b-phone" data-biz="phone"></label>
+          <label>Email<input id="b-email" data-biz="email"></label>
+          <label>License # (optional)<input id="b-license" data-biz="license"></label>
+        </div>
+        <label>Address<input id="b-addr" data-biz="address"></label>
+        <label>Default "How to pay you" for new invoices<textarea id="b-pay" data-biz="payInfo" rows="2" placeholder="Zelle, Venmo, check payable to…"></textarea></label>
+        <div class="logo-row">
+          <label style="flex:1">Logo (optional)<input id="b-logo" type="file" accept="image/*"></label>
+          <img id="logoThumb" alt="Your logo" hidden>
+          <button type="button" id="clearLogo" class="link danger" hidden>Remove logo</button>
+        </div>
+      </div>
+      <p class="hint">Everything is saved in this browser on this device only. Nothing is sent anywhere.</p>
+    </div>
+  </section>
+</div>
+
+<div class="mbar" id="mbar">
+  <div><span class="k" id="mLabel">Total</span><b id="mTotal">$0.00</b></div>
+  <button type="button" id="mToggle" class="primary">Preview ticket</button>
+</div>
+<div class="overlay" id="paywall" hidden>
+  <div class="paywall" role="dialog" aria-modal="true" aria-labelledby="pwTitle">
+    <h3 id="pwTitle">You've used your 3 free invoices</h3>
+    <p id="pwLead">Hope Job Ticket saved you some time. Upgrade to keep going.</p>
+    <ul class="perks">
+      <li>Unlimited invoices (quotes are always free)</li>
+      <li>Your templates, rates and tickets stay right where they are</li>
+      <li>"Made with Job Ticket" removed from your tickets</li>
+    </ul>
+    <div class="price" id="pwPrice"></div>
+    <div class="row-top" style="justify-content:flex-start">
+      <a class="btn primary" id="pwBuy" target="_blank" rel="noopener" hidden>Buy now</a>
+      <button type="button" id="pwClose" class="link">Not now</button>
+    </div>
+    <p class="hint" id="pwHow"></p>
+    <div class="code-box">
+      <label for="pwCode">Already paid? Enter your unlock code</label>
+      <div class="code-row">
+        <input id="pwCode" placeholder="JT-XXXX-XXXX" autocomplete="off" spellcheck="false">
+        <button type="button" id="pwUnlock">Unlock</button>
+      </div>
+      <span class="code-err" id="pwErr" hidden></span>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(function () {
+  "use strict";
+  var KEY_DOCS = "jobticket.docs.v1", KEY_BIZ = "jobticket.biz.v1", KEY_CUR = "jobticket.current.v1";
+  var KEY_BOOK = "jobticket.book.v1", KEY_TPL = "jobticket.templates.v1", KEY_SETUP = "jobticket.setup.v1", KEY_PLAN = "jobticket.plan.v1";
+
+  // ---------- launch settings: edit these
+  var FREE_INVOICES = 3;
+  var PRICE = "$29";
+  var PRICE_NOTE = "One-time founding price. Pay once, use it for good.";
+  var PAY_URL = "";   // your Stripe Payment Link, e.g. https://buy.stripe.com/...
+  var CONTACT = "";   // where buyers get their unlock code, e.g. a phone number or email
+  var CODE_SALT = "jt-launch-2026"; // must match tools/make-codes.js
+  var $ = function (s) { return document.querySelector(s); };
+  var $$ = function (s) { return [].slice.call(document.querySelectorAll(s)); };
+
+  function load(k, fallback) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : fallback; } catch (e) { return fallback; } }
+  function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
+  function today() { var d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); }
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function num(v) { var n = parseFloat(v); return isFinite(n) ? n : 0; }
+
+  // ---------- data
+  var biz = load(KEY_BIZ, null) || {
+    name: "Rivera Plumbing & Repair", phone: "(555) 214-8830", email: "office@riveraplumbing.example",
+    address: "1180 Alder St, Fresno, CA 93721", license: "CSLB #1043387", logo: "",
+    payInfo: "Zelle: office@riveraplumbing.example\nChecks payable to Rivera Plumbing & Repair"
+  };
+  // Price book: the business's own rates. Example values match the sample plumber.
+  var book = load(KEY_BOOK, null) || {
+    laborRate: 95, markup: 20, tripCharge: 79, disposalFee: 65, minCharge: 150, taxRate: 7.25, trade: "Plumbing",
+    items: [
+      { id: "b1", name: "Braided supply line", unit: "ea", kind: "mat", amt: 12 },
+      { id: "b2", name: "Shutoff valve, 1/4 turn", unit: "ea", kind: "mat", amt: 14 },
+      { id: "b3", name: "Wax ring & closet bolts", unit: "ea", kind: "mat", amt: 9 },
+      { id: "b4", name: "PEX pipe, 1/2 in", unit: "ft", kind: "mat", amt: 0.6 },
+      { id: "b5", name: "Camera inspection of drain line", unit: "job", kind: "fixed", amt: 175 }
+    ]
+  };
+  var myTemplates = load(KEY_TPL, []);
+  var setupDone = load(KEY_SETUP, false);
+
+  // Typical starting rates per trade for the setup step; the business changes them in My rates.
+  var TRADE_DEFAULTS = {
+    Plumbing:    { laborRate: 95, tripCharge: 79, disposalFee: 65, minCharge: 150, markup: 20 },
+    Electrical:  { laborRate: 95, tripCharge: 79, disposalFee: 25, minCharge: 150, markup: 20 },
+    Handyman:    { laborRate: 65, tripCharge: 0,  disposalFee: 40, minCharge: 100, markup: 15 },
+    Cleaning:    { laborRate: 40, tripCharge: 0,  disposalFee: 0,  minCharge: 120, markup: 0 },
+    Landscaping: { laborRate: 50, tripCharge: 0,  disposalFee: 15, minCharge: 60,  markup: 15 },
+    Painting:    { laborRate: 55, tripCharge: 0,  disposalFee: 0,  minCharge: 200, markup: 15 }
+  };
+
+  var STARTER = [
+    { trade: "Plumbing", name: "Water heater replacement (50 gal gas)", lines: [
+      { k: "mat", desc: "50 gal gas water heater", qty: 1, unit: "ea", amt: 750 },
+      { k: "mat", desc: "Flex connectors, valve, venting parts", qty: 1, unit: "ea", amt: 60 },
+      { k: "labor", desc: "Labor: remove old tank & install", qty: 4.5, unit: "hr" },
+      { k: "disposal", desc: "Haul-away & disposal of old tank", qty: 1, unit: "ea" }] },
+    { trade: "Plumbing", name: "Toilet replacement", lines: [
+      { k: "mat", desc: "Toilet, standard height", qty: 1, unit: "ea", amt: 220 },
+      { k: "mat", desc: "Wax ring, bolts & supply line", qty: 1, unit: "ea", amt: 25 },
+      { k: "labor", desc: "Labor: remove & install toilet", qty: 2, unit: "hr" },
+      { k: "disposal", desc: "Disposal of old toilet", qty: 1, unit: "ea" }] },
+    { trade: "Plumbing", name: "Kitchen faucet install (customer-supplied)", lines: [
+      { k: "trip", desc: "Service call", qty: 1, unit: "visit" },
+      { k: "mat", desc: "Supply lines", qty: 2, unit: "ea", amt: 12 },
+      { k: "labor", desc: "Labor: remove old faucet & install new", qty: 1.25, unit: "hr" }] },
+    { trade: "Plumbing", name: "Drain clog clearing", lines: [
+      { k: "trip", desc: "Service call", qty: 1, unit: "visit" },
+      { k: "labor", desc: "Labor: snake & clear drain", qty: 1, unit: "hr" },
+      { k: "fixed", desc: "Drain machine use", qty: 1, unit: "job", amt: 45 }] },
+    { trade: "Plumbing", name: "Garbage disposal replacement", lines: [
+      { k: "mat", desc: "Garbage disposal, 1/2 hp", qty: 1, unit: "ea", amt: 140 },
+      { k: "mat", desc: "Fittings & cord kit", qty: 1, unit: "ea", amt: 18 },
+      { k: "labor", desc: "Labor: remove & install disposal", qty: 1.5, unit: "hr" },
+      { k: "disposal", desc: "Disposal of old unit", qty: 1, unit: "ea" }] },
+    { trade: "Electrical", name: "Ceiling fan install (existing box)", lines: [
+      { k: "trip", desc: "Service call", qty: 1, unit: "visit" },
+      { k: "mat", desc: "Fan-rated brace & box", qty: 1, unit: "ea", amt: 22 },
+      { k: "labor", desc: "Labor: assemble & install fan", qty: 2, unit: "hr" }] },
+    { trade: "Electrical", name: "Replace outlets / switches (5)", lines: [
+      { k: "trip", desc: "Service call", qty: 1, unit: "visit" },
+      { k: "mat", desc: "Outlet or switch, with plate", qty: 5, unit: "ea", amt: 6 },
+      { k: "labor", desc: "Labor: replace devices", qty: 1.5, unit: "hr" }] },
+    { trade: "Electrical", name: "GFCI outlet install", lines: [
+      { k: "trip", desc: "Service call", qty: 1, unit: "visit" },
+      { k: "mat", desc: "GFCI outlet, 20A", qty: 1, unit: "ea", amt: 24 },
+      { k: "labor", desc: "Labor: install & test GFCI", qty: 0.75, unit: "hr" }] },
+    { trade: "Handyman", name: "Drywall patch (fist-size to 2 ft)", lines: [
+      { k: "trip", desc: "Visits (patch, then texture & paint)", qty: 2, unit: "visit" },
+      { k: "mat", desc: "Drywall, mud, tape & paint", qty: 1, unit: "ea", amt: 30 },
+      { k: "labor", desc: "Labor: patch, sand, texture, paint", qty: 3, unit: "hr" }] },
+    { trade: "Handyman", name: "TV wall mount", lines: [
+      { k: "mat", desc: "Anchors & cable cover", qty: 1, unit: "ea", amt: 15 },
+      { k: "labor", desc: "Labor: locate studs, mount TV, tidy cables", qty: 1.5, unit: "hr" }] },
+    { trade: "Handyman", name: "Interior prehung door install", lines: [
+      { k: "mat", desc: "Prehung interior door", qty: 1, unit: "ea", amt: 180 },
+      { k: "mat", desc: "Trim, shims & hardware", qty: 1, unit: "ea", amt: 40 },
+      { k: "labor", desc: "Labor: remove old door, hang & trim new", qty: 3, unit: "hr" },
+      { k: "disposal", desc: "Disposal of old door", qty: 1, unit: "ea" }] },
+    { trade: "Cleaning", name: "Standard house clean (3 bed / 2 bath)", lines: [
+      { k: "labor", desc: "Cleaning labor", qty: 3, unit: "hr" },
+      { k: "mat", desc: "Supplies", qty: 1, unit: "job", amt: 12 }] },
+    { trade: "Cleaning", name: "Move-out deep clean", lines: [
+      { k: "labor", desc: "Deep cleaning labor (inside cabinets, appliances, baseboards)", qty: 6, unit: "hr" },
+      { k: "mat", desc: "Supplies", qty: 1, unit: "job", amt: 25 }] },
+    { trade: "Landscaping", name: "Mow, edge & blow (standard lot)", lines: [
+      { k: "labor", desc: "Mow, edge & blow", qty: 1, unit: "hr" },
+      { k: "fixed", desc: "Green waste disposal", qty: 1, unit: "job", amt: 15 }] },
+    { trade: "Landscaping", name: "Mulch install (4 cubic yards)", lines: [
+      { k: "mat", desc: "Bulk mulch", qty: 4, unit: "cu yd", amt: 40 },
+      { k: "fixed", desc: "Material delivery", qty: 1, unit: "job", amt: 60 },
+      { k: "labor", desc: "Labor: weed, edge beds & spread mulch", qty: 4, unit: "hr" }] },
+    { trade: "Painting", name: "Repaint one room (12 x 12, walls only)", lines: [
+      { k: "mat", desc: "Interior paint", qty: 2, unit: "gal", amt: 50 },
+      { k: "mat", desc: "Tape, plastic, patch & rollers", qty: 1, unit: "job", amt: 25 },
+      { k: "labor", desc: "Labor: prep, cut in, two coats", qty: 7, unit: "hr" }] }
+  ];
+  STARTER.forEach(function (t, i) { t.id = "s" + i; });
+
+  var docs = load(KEY_DOCS, null);
+  if (!docs || !docs.length) {
+    var past = function (days) { var d = new Date(); d.setDate(d.getDate() - days); return d.toISOString().slice(0, 10); };
+    docs = [{
+      id: uid(), example: true, kind: "invoice", status: "sent", number: "INV-1001", date: today(), termsDays: 14,
+      job: "Replace water heater in garage", currency: "USD",
+      client: { name: "Dana Whitfield", contact: "(555) 390-1172", address: "47 Cedar Ct\nClovis, CA 93612" },
+      items: [
+        { desc: "50 gal gas water heater (Rheem)", qty: 1, unit: "ea", rate: 949 },
+        { desc: "Labor: removal & install", qty: 4.5, unit: "hr", rate: 95 },
+        { desc: "Flex connectors, valve, venting", qty: 1, unit: "ea", rate: 86.4 },
+        { desc: "Haul-away & disposal of old tank", qty: 1, unit: "ea", rate: 65 }
+      ],
+      discount: 50, taxRate: 7.25, deposit: 300,
+      notes: "Thanks for choosing us. 1-year labor warranty on this install.",
+      payInfo: biz.payInfo
+    }, {
+      id: uid(), example: true, kind: "invoice", status: "sent", number: "INV-1000", date: past(24), termsDays: 7,
+      job: "Clear kitchen drain", currency: "USD",
+      client: { name: "Marcus Lee", contact: "(555) 448-2290", address: "902 Olive Ave\nFresno, CA 93728" },
+      items: [{ desc: "Service call", qty: 1, unit: "visit", rate: 79 }, { desc: "Labor: snake & clear drain", qty: 1, unit: "hr", rate: 95 }],
+      discount: 0, taxRate: 7.25, deposit: 0, notes: "Thank you for your business.", payInfo: biz.payInfo
+    }, {
+      id: uid(), example: true, kind: "quote", status: "sent", number: "Q-101", date: past(3), termsDays: 30,
+      job: "Toilet replacement, upstairs bath", currency: "USD",
+      client: { name: "Priya Shah", contact: "priya.shah@mail.example", address: "15 Maple Ln\nClovis, CA 93611" },
+      items: [{ desc: "Toilet, standard height", qty: 1, unit: "ea", rate: 264 }, { desc: "Wax ring, bolts & supply line", qty: 1, unit: "ea", rate: 30 },
+        { desc: "Labor: remove & install toilet", qty: 2, unit: "hr", rate: 95 }, { desc: "Disposal of old toilet", qty: 1, unit: "ea", rate: 65 }],
+      discount: 0, taxRate: 7.25, deposit: 100, notes: "Price includes labor and materials listed.", payInfo: ""
+    }];
+  }
+  // Free plan: count invoices created (deleting one doesn't give it back).
+  var plan = load(KEY_PLAN, null);
+  if (!plan) {
+    plan = { used: 0, unlocked: false, code: "" };
+    docs.forEach(function (d) { if (d.kind === "invoice" && !d.example) { d.counted = true; plan.used++; } });
+  }
+  var curId = load(KEY_CUR, null);
+  var doc = docs.filter(function (d) { return d.id === curId; })[0] || docs[0];
+
+  // ---------- money
+  function totals(d) {
+    var sub = d.items.reduce(function (s, it) { return s + num(it.qty) * num(it.rate); }, 0);
+    var disc = Math.min(num(d.discount), sub);
+    var taxable = sub - disc;
+    var tax = Math.round(taxable * num(d.taxRate)) / 100;
+    var total = taxable + tax;
+    var dep = num(d.deposit);
+    return { sub: sub, disc: disc, tax: tax, total: total, dep: dep, balance: total - dep };
+  }
+  function money(n, cur) {
+    try { return new Intl.NumberFormat(undefined, { style: "currency", currency: cur || "USD" }).format(n); }
+    catch (e) { return (cur || "") + " " + n.toFixed(2); }
+  }
+  function sym(cur) {
+    try { return new Intl.NumberFormat(undefined, { style: "currency", currency: cur || "USD" }).formatToParts(0).filter(function (p) { return p.type === "currency"; })[0].value; }
+    catch (e) { return "$"; }
+  }
+  function marked(cost) { return Math.round(num(cost) * (100 + num(book.markup))) / 100; }
+  function bookPrice(b) { return b.kind === "mat" ? marked(b.amt) : num(b.amt); }
+  function findBook(name) {
+    var n = String(name || "").trim().toLowerCase();
+    return n ? book.items.filter(function (b) { return b.name.trim().toLowerCase() === n; })[0] : null;
+  }
+  function linePrice(l) {
+    if (l.k === "labor") return num(book.laborRate);
+    if (l.k === "trip") return num(book.tripCharge);
+    if (l.k === "disposal") return num(book.disposalFee);
+    if (l.k === "mat") return marked(l.amt);
+    if (l.k === "book") { var b = findBook(l.desc); return b ? bookPrice(b) : num(l.amt); }
+    return num(l.amt);
+  }
+  function tplItems(t) {
+    return t.lines.map(function (l) { return { desc: l.desc, qty: l.qty, unit: l.unit, rate: linePrice(l) }; })
+      .filter(function (it) { return num(it.rate) > 0; }); // a $0 service fee means "I don't charge one"
+  }
+  function tplSum(t) { return tplItems(t).reduce(function (s, it) { return s + num(it.qty) * num(it.rate); }, 0); }
+  function allTemplates() { return myTemplates.concat(STARTER); }
+
+  // ---------- dates & status
+  function dueDate(d) {
+    if (!d.date) return "";
+    var t = new Date(d.date + "T12:00:00"); t.setDate(t.getDate() + num(d.termsDays));
+    return t.toISOString().slice(0, 10);
+  }
+  function fmtDate(s, short) {
+    if (!s) return "—";
+    var t = new Date(s + "T12:00:00");
+    return t.toLocaleDateString(undefined, short ? { month: "short", day: "numeric" } : { year: "numeric", month: "short", day: "numeric" });
+  }
+  function isOverdue(d) { return d.kind === "invoice" && d.status === "sent" && dueDate(d) < today(); }
+  function statusOf(d) { return isOverdue(d) ? "overdue" : d.status; }
+  function statusLabel(d) {
+    var s = statusOf(d);
+    return s === "overdue" ? "Overdue" : s === "paid" ? (d.kind === "quote" ? "Accepted" : "Paid") : s === "sent" ? "Sent" : "Draft";
+  }
+  function nextNumber(kind) {
+    var prefix = kind === "quote" ? "Q-" : "INV-", max = kind === "quote" ? 100 : 1000;
+    docs.forEach(function (d) {
+      var m = String(d.number || "").match(/(\d+)\s*$/);
+      if (d.kind === kind && m) max = Math.max(max, parseInt(m[1], 10));
+    });
+    return prefix + (max + 1);
+  }
+  // ---------- plan & unlock codes
+  var ALPH = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  function fnv(str) { var h = 0x811c9dc5; for (var i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return h >>> 0; }
+  function codeCheck(id) { var h = fnv(CODE_SALT + "|" + id), out = ""; for (var i = 0; i < 4; i++) { out += ALPH[h % 32]; h = Math.floor(h / 32); } return out; }
+  function validCode(c) { var m = /^JT-([A-Z2-9]{4})-([A-Z2-9]{4})$/.exec(c); return !!m && codeCheck(m[1]) === m[2]; }
+  function isPro() { return !!plan.unlocked; }
+  function freeLeft() { return Math.max(0, FREE_INVOICES - plan.used); }
+  function canMakeInvoice() { return isPro() || freeLeft() > 0; }
+  // Count a ticket the first time it becomes an invoice. Returns false (and shows the upgrade) when out of free invoices.
+  function claimInvoice(d) {
+    if (d.counted || d.example || isPro()) { d.counted = true; return true; }
+    if (!canMakeInvoice()) { openPaywall(true); return false; }
+    plan.used++; d.counted = true; renderPlan();
+    return true;
+  }
+  function freeNote() {
+    if (isPro()) return "";
+    var n = freeLeft();
+    return n ? " (" + n + " free invoice" + (n === 1 ? "" : "s") + " left)" : ". That was your last free invoice; quotes stay free.";
+  }
+  function renderPlan() {
+    var c = $("#planChip");
+    c.hidden = isPro();
+    if (isPro()) return;
+    var left = freeLeft();
+    c.classList.toggle("out", !left);
+    c.textContent = left ? left + " of " + FREE_INVOICES + " free invoices left" : "Free invoices used · Upgrade";
+  }
+  function openPaywall(atLimit) {
+    $("#pwTitle").textContent = atLimit ? "You've used your " + FREE_INVOICES + " free invoices" : "Upgrade to unlimited invoices";
+    $("#pwLead").textContent = atLimit ? "Hope Job Ticket saved you some time. Upgrade to keep making invoices." : "You have " + freeLeft() + " free invoice" + (freeLeft() === 1 ? "" : "s") + " left. Upgrade anytime.";
+    $("#pwPrice").innerHTML = esc(PRICE) + "<small>" + esc(PRICE_NOTE) + "</small>";
+    $("#pwBuy").hidden = !PAY_URL; if (PAY_URL) $("#pwBuy").href = PAY_URL;
+    $("#pwHow").textContent = PAY_URL
+      ? "After you pay, you'll get an unlock code" + (CONTACT ? ". Questions? Contact " + CONTACT + "." : ".")
+      : CONTACT ? "To buy, contact " + CONTACT + ". You'll get an unlock code to enter below."
+      : "Ask the person who shared Job Ticket with you for an unlock code.";
+    $("#pwErr").hidden = true; $("#pwCode").value = "";
+    $("#paywall").hidden = false; $("#pwCode").focus();
+  }
+  function closePaywall() { $("#paywall").hidden = true; }
+  $("#planChip").addEventListener("click", function () { openPaywall(!canMakeInvoice()); });
+  $("#pwClose").addEventListener("click", closePaywall);
+  $("#paywall").addEventListener("click", function (e) { if (e.target.id === "paywall") closePaywall(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !$("#paywall").hidden) closePaywall(); });
+  function tryUnlock() {
+    var c = $("#pwCode").value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+    c = c.replace(/^JT/, "").replace(/^(.{4})(.{4})$/, "JT-$1-$2");
+    if (!validCode(c)) { $("#pwErr").textContent = "That code doesn't match. Check it and try again (it looks like JT-AB3D-9KXQ)."; $("#pwErr").hidden = false; return; }
+    plan.unlocked = true; plan.code = c; flush(); closePaywall(); renderPlan(); renderPreview();
+    toast("Unlocked. Unlimited invoices are on. Thank you!");
+  }
+  $("#pwUnlock").addEventListener("click", tryUnlock);
+  $("#pwCode").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); tryUnlock(); } });
+
+  function hasLines(d) { return d.items.some(function (it) { return it.desc || num(it.rate); }); }
+
+  // ---------- persistence
+  var saveTimer;
+  function flush() {
+    clearTimeout(saveTimer);
+    var ok = save(KEY_DOCS, docs) && save(KEY_BIZ, biz) && save(KEY_CUR, doc.id) && save(KEY_BOOK, book) && save(KEY_TPL, myTemplates) && save(KEY_SETUP, setupDone) && save(KEY_PLAN, plan);
+    $("#saveState").textContent = ok ? "Saved on this device" : "Not saved: this browser blocks storage";
+  }
+  function persist() {
+    clearTimeout(saveTimer);
+    $("#saveState").textContent = "Saving…";
+    saveTimer = setTimeout(flush, 300);
+  }
+  window.addEventListener("pagehide", flush);
+  document.addEventListener("visibilitychange", function () { if (document.hidden) flush(); });
+
+  // ---------- views
+  var VIEWS = ["ticket", "tickets", "rates", "business"], view = "ticket";
+  function showView(v, keepScroll) {
+    if (VIEWS.indexOf(v) < 0) v = "ticket";
+    view = v;
+    VIEWS.forEach(function (n) { $("#view-" + n).hidden = n !== v; });
+    $$("[data-view]").forEach(function (b) { if (b.getAttribute("data-view") === v) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+    document.body.classList.toggle("on-ticket", v === "ticket");
+    try { history.replaceState(null, "", "#" + v); } catch (e) {}
+    if (v === "ticket") renderTicketView();
+    if (v === "tickets") renderList();
+    if (v === "rates") renderRates();
+    if (v === "business") renderBusiness();
+    if (!keepScroll) window.scrollTo(0, 0);
+  }
+
+  // ---------- ticket view
+  var tplOpen = false, tplTrade = null, selectedTpl = null;
+  function getPath(o, p) { return p.split(".").reduce(function (a, k) { return a == null ? a : a[k]; }, o); }
+  function setPath(o, p, v) { var ks = p.split("."), last = ks.pop(); ks.reduce(function (a, k) { return a[k] = a[k] || {}; }, o)[last] = v; }
+
+  function renderTicketView() {
+    $("#welcome").hidden = setupDone;
+    $$("#form [data-path]").forEach(function (el) {
+      var v = getPath(doc, el.getAttribute("data-path"));
+      el.value = v == null ? "" : v;
+    });
+    var s = sym(doc.currency);
+    $("#sym-disc").setAttribute("data-sym", s); $("#sym-dep").setAttribute("data-sym", s);
+    renderSegs(); renderItems(); renderTpl(); renderPreview(); renderMinWarn(); renderBookList(); updateBar();
+  }
+  function renderSegs() {
+    $$("[data-kind]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-kind") === doc.kind)); });
+    $$("[data-status]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-status") === doc.status)); });
+    var q = doc.kind === "quote";
+    $("#termsLabel").textContent = q ? "Quote good for" : "Payment terms";
+    var opts = $("#f-terms").options;
+    opts[0].text = q ? "Today only" : "Due on receipt";
+    opts[1].text = q ? "7 days" : "Net 7"; opts[2].text = q ? "14 days" : "Net 14"; opts[3].text = q ? "30 days" : "Net 30";
+    $("#depLabel").textContent = q ? "Deposit to start" : "Deposit received";
+    $("#stPaid").textContent = q ? "Accepted" : "Paid";
+    $("#convertBtn").hidden = !q;
+  }
+  var UNITS = ["hr", "ea", "day", "sq ft", "ft", "gal", "cu yd", "visit", "job"];
+  function unitOpts(cur) {
+    return UNITS.concat(UNITS.indexOf(cur) < 0 && cur ? [cur] : []).map(function (u) {
+      return "<option" + (u === cur ? " selected" : "") + ">" + esc(u) + "</option>";
+    }).join("");
+  }
+  function renderItems() {
+    $("#items").innerHTML = doc.items.map(function (it, i) {
+      return '<div class="item">' +
+        '<input class="desc" list="bookList" id="it-d-' + i + '" data-i="' + i + '" data-f="desc" value="' + esc(it.desc) + '" placeholder="What you did or supplied" aria-label="Description">' +
+        '<input id="it-q-' + i + '" type="number" step="0.25" min="0" data-i="' + i + '" data-f="qty" value="' + esc(it.qty) + '" aria-label="Quantity">' +
+        '<select id="it-u-' + i + '" data-i="' + i + '" data-f="unit" aria-label="Unit">' + unitOpts(it.unit) + "</select>" +
+        '<input id="it-r-' + i + '" type="number" step="0.01" min="0" data-i="' + i + '" data-f="rate" value="' + esc(it.rate) + '" aria-label="Rate per unit">' +
+        '<span class="amt" id="it-a-' + i + '">' + money(num(it.qty) * num(it.rate), doc.currency) + "</span>" +
+        '<button type="button" class="x" data-del="' + i + '" aria-label="Remove line">✕</button></div>';
+    }).join("");
+  }
+  function renderTpl() {
+    $("#tplBox").hidden = !tplOpen;
+    $("#tplShow").hidden = tplOpen;
+    if (!tplOpen) return;
+    var trades = [];
+    STARTER.forEach(function (t) { if (trades.indexOf(t.trade) < 0) trades.push(t.trade); });
+    if (myTemplates.length) trades.unshift("Mine");
+    if (!tplTrade || trades.indexOf(tplTrade) < 0) tplTrade = myTemplates.length ? "Mine" : (book.trade || trades[0]);
+    $("#tplTrades").innerHTML = trades.map(function (t) {
+      return '<button type="button" data-trade="' + esc(t) + '" aria-pressed="' + (t === tplTrade) + '">' + (t === "Mine" ? "My templates" : esc(t)) + "</button>";
+    }).join("");
+    var list = tplTrade === "Mine" ? myTemplates : STARTER.filter(function (t) { return t.trade === tplTrade; });
+    $("#tplCards").innerHTML = list.map(function (t) {
+      return '<button type="button" class="tpl-card" data-tpl="' + t.id + '" aria-pressed="' + (t.id === selectedTpl) + '">' +
+        '<span class="nm">' + esc(t.name) + '</span><span class="pr">about ' + money(tplSum(t), doc.currency) + " before tax</span></button>";
+    }).join("");
+    renderTplPreview();
+  }
+  function renderTplPreview() {
+    var t = allTemplates().filter(function (x) { return x.id === selectedTpl; })[0];
+    var box = $("#tplPreview");
+    if (!t) { box.hidden = true; return; }
+    box.hidden = false;
+    var c = doc.currency;
+    box.innerHTML = tplItems(t).map(function (it) {
+      return '<div class="ln"><span>' + esc(it.desc) + " · " + num(it.qty) + " " + esc(it.unit) + "</span><span>" + money(num(it.qty) * num(it.rate), c) + "</span></div>";
+    }).join("") +
+      '<div class="sum"><span>Estimate before tax</span><span>' + money(tplSum(t), c) + "</span></div>" +
+      '<span class="hint">' + (t.trade ? "Hours and part costs are typical starting points. You can edit every line after adding." : "Your saved template, priced with your current rates.") + "</span>" +
+      '<div class="subrow"><button type="button" class="primary" id="tplUse">' + (hasLines(doc) ? "Add these lines" : "Use this template") + "</button>" +
+      (t.trade ? "" : '<button type="button" class="link danger" id="tplDel">Delete template</button>') + "</div>";
+  }
+  function renderMinWarn() {
+    var sub = totals(doc).sub, min = num(book.minCharge), w = $("#minWarn");
+    if (!min || sub <= 0 || sub >= min) { w.hidden = true; return; }
+    w.hidden = false;
+    w.innerHTML = "<span>This job is " + money(min - sub, doc.currency) + " under your " + money(min, doc.currency) + " minimum.</span>" +
+      '<button type="button" id="minFix">Bring it up to the minimum</button>';
+  }
+  function renderBookList() {
+    $("#bookList").innerHTML = book.items.filter(function (b) { return b.name; }).map(function (b) { return '<option value="' + esc(b.name) + '"></option>'; }).join("");
+  }
+  function updateBar() {
+    var t = totals(doc), q = doc.kind === "quote", inv = !q && doc.status !== "paid" && t.dep;
+    $("#mLabel").textContent = inv ? "Balance due" : (q ? "Quote total" : "Total");
+    $("#mTotal").textContent = money(inv ? t.balance : t.total, doc.currency);
+  }
+
+  function renderPreview() {
+    var t = totals(doc), q = doc.kind === "quote", c = doc.currency, st = statusOf(doc);
+    var rows = doc.items.filter(function (it) { return it.desc || num(it.rate); }).map(function (it) {
+      return "<tr><td>" + esc(it.desc) + '</td><td class="n">' + esc(num(it.qty)) + " " + esc(it.unit) + '</td><td class="n">' +
+        money(num(it.rate), c) + '</td><td class="n">' + money(num(it.qty) * num(it.rate), c) + "</td></tr>";
+    }).join("") || '<tr><td colspan="4" style="color:var(--sheet-muted)">Add a line of work or materials, or start from a template.</td></tr>';
+    var dateLine = q
+      ? (num(doc.termsDays) ? "Valid until " + fmtDate(dueDate(doc)) : "Valid today")
+      : (num(doc.termsDays) ? "Due " + fmtDate(dueDate(doc)) : "Due on receipt");
+    var contactBits = [biz.phone, biz.email].filter(Boolean).map(esc).join(" · ");
+
+    $("#ticket").innerHTML =
+      '<div class="perf"></div>' +
+      '<div class="t-body">' +
+        '<div class="t-head"><div class="t-biz">' +
+          (biz.logo ? '<img src="' + esc(biz.logo) + '" alt="">' : "") +
+          "<strong>" + esc(biz.name || "Your business name") + "</strong>" +
+          (biz.address ? "<span>" + esc(biz.address) + "</span>" : "") +
+          (contactBits ? "<span>" + contactBits + "</span>" : "") +
+          (biz.license ? "<span>" + esc(biz.license) + "</span>" : "") +
+        '</div><div class="t-kind"><h2>' + (q ? "Quote" : "Invoice") + '</h2><div class="no">' + esc(doc.number) + '</div><div class="stamp ' + st + '">' + statusLabel(doc) + "</div></div></div>" +
+        '<div class="t-meta">' +
+          '<div><div class="k">' + (q ? "Prepared for" : "Bill to") + '</div><div class="v"><strong>' + esc(doc.client.name || "—") + "</strong>" +
+            (doc.client.address ? "\n" + esc(doc.client.address) : "") + (doc.client.contact ? "\n" + esc(doc.client.contact) : "") + "</div></div>" +
+          '<div><div class="k">Date</div><div class="v mono">' + fmtDate(doc.date) + '</div><div class="k" style="margin-top:10px">' + (q ? "Validity" : "Terms") + '</div><div class="v">' + dateLine + "</div></div>" +
+          '<div><div class="k">Job</div><div class="v">' + esc(doc.job || "—") + "</div></div>" +
+        "</div>" +
+        '<div class="t-table-wrap"><table><thead><tr><th>Description</th><th class="n">Qty</th><th class="n">Rate</th><th class="n">Amount</th></tr></thead><tbody>' + rows + "</tbody></table></div>" +
+        '<div class="t-foot"><div class="t-notes">' +
+          (doc.notes ? "<div><b>Note</b>" + esc(doc.notes) + "</div>" : "") +
+          (doc.payInfo && !q ? "<div><b>How to pay</b>" + esc(doc.payInfo) + "</div>" : "") +
+          (q ? "<div><b>To accept</b>Sign below or reply to approve. Work is scheduled once the deposit is in.</div>" : "") +
+        '</div><div class="totals">' +
+          "<div><span>Subtotal</span><span>" + money(t.sub, c) + "</span></div>" +
+          (t.disc ? "<div><span>Discount</span><span>−" + money(t.disc, c) + "</span></div>" : "") +
+          (num(doc.taxRate) ? "<div><span>Tax (" + num(doc.taxRate) + "%)</span><span>" + money(t.tax, c) + "</span></div>" : "") +
+          '<div class="grand"><span>Total</span><span>' + money(t.total, c) + "</span></div>" +
+          (t.dep ? "<div><span>" + (q ? "Deposit to start" : "Deposit received") + "</span><span>" + (q ? "" : "−") + money(t.dep, c) + "</span></div>" : "") +
+          (!q ? '<div class="due"><span>' + (doc.status === "paid" ? "Paid in full" : "Balance due") + "</span><span>" + money(doc.status === "paid" ? 0 : t.balance, c) + "</span></div>" : "") +
+        "</div></div>" +
+        (q ? '<div class="sign"><div>Customer signature</div><div>Date</div></div>' : "") +
+      "</div>" +
+      (isPro() ? "" : '<div class="made">Made with Job Ticket</div>');
+    $("#exampleNote").hidden = !doc.example;
+  }
+
+  // ---------- all tickets
+  var filter = "all";
+  var FILTERS = [["all", "All"], ["unpaid", "Unpaid"], ["overdue", "Overdue"], ["quotes", "Quotes"], ["paid", "Paid"], ["draft", "Drafts"]];
+  function matches(d, f) {
+    if (f === "unpaid") return d.kind === "invoice" && d.status === "sent";
+    if (f === "overdue") return isOverdue(d);
+    if (f === "quotes") return d.kind === "quote";
+    if (f === "paid") return d.kind === "invoice" && d.status === "paid";
+    if (f === "draft") return d.status === "draft";
+    return true;
+  }
+  function renderBadge() {
+    var n = docs.filter(isOverdue).length, b = $("#overdueBadge");
+    b.hidden = !n; b.textContent = n;
+  }
+  function renderList() {
+    var cur = (docs[0] || {}).currency;
+    var unpaid = docs.filter(function (d) { return matches(d, "unpaid"); }),
+        late = docs.filter(isOverdue),
+        quotes = docs.filter(function (d) { return d.kind === "quote" && d.status !== "paid"; }),
+        paid = docs.filter(function (d) { return matches(d, "paid"); });
+    var sum = function (arr, f) { return arr.reduce(function (s, d) { return s + f(totals(d)); }, 0); };
+    var bal = function (t) { return t.balance; }, tot = function (t) { return t.total; };
+    var plural = function (n, w) { return n + " " + w + (n === 1 ? "" : "s"); };
+    $("#tiles").innerHTML =
+      '<button type="button" class="tile" data-filter="unpaid"><span class="k">Owed to you</span><span class="v">' + money(sum(unpaid, bal), cur) + '</span><span class="s">' + plural(unpaid.length, "unpaid invoice") + "</span></button>" +
+      '<button type="button" class="tile' + (late.length ? " alert" : "") + '" data-filter="overdue"><span class="k">Overdue</span><span class="v">' + money(sum(late, bal), cur) + '</span><span class="s">' + (late.length ? plural(late.length, "invoice") + " past due" : "Nothing late") + "</span></button>" +
+      '<button type="button" class="tile" data-filter="quotes"><span class="k">Open quotes</span><span class="v">' + money(sum(quotes, tot), cur) + '</span><span class="s">' + plural(quotes.length, "quote") + " waiting on a yes</span></button>" +
+      '<button type="button" class="tile" data-filter="paid"><span class="k">Collected</span><span class="v">' + money(sum(paid, tot), cur) + '</span><span class="s">' + plural(paid.length, "paid invoice") + "</span></button>";
+    $("#filters").innerHTML = FILTERS.map(function (f) {
+      return '<button type="button" data-filter="' + f[0] + '" aria-pressed="' + (f[0] === filter) + '">' + f[1] + "</button>";
+    }).join("");
+    var list = docs.filter(function (d) { return matches(d, filter); })
+      .sort(function (a, b) { return String(b.date).localeCompare(String(a.date)) || String(b.number).localeCompare(String(a.number)); });
+    $("#list").innerHTML = list.map(function (d) {
+      var t = totals(d), st = statusOf(d);
+      var when = d.kind === "quote" ? "Sent " + fmtDate(d.date, true) : (st === "paid" ? "Paid" : (st === "draft" ? "Not sent yet" : "Due " + fmtDate(dueDate(d), true)));
+      var amt = d.kind === "invoice" && st !== "paid" && st !== "draft" ? t.balance : t.total;
+      return '<button type="button" class="lrow' + (d.example ? " ex" : "") + '" data-open="' + d.id + '">' +
+        '<span class="num">' + esc(d.number) + '</span>' +
+        '<span class="who"><strong>' + esc(d.client.name || "No customer yet") + "</strong><span>" + esc(d.job || "No job description") + (d.example ? " · example" : "") + "</span></span>" +
+        '<span class="when">' + when + "</span>" +
+        '<span class="pillcell"><span class="pill ' + st + '">' + statusLabel(d) + "</span></span>" +
+        '<span class="amt">' + money(amt, d.currency) + "</span></button>";
+    }).join("") || '<p class="empty">No tickets here yet.</p>';
+  }
+
+  // ---------- my rates
+  function renderRates() {
+    $$("[data-book]").forEach(function (el) { el.value = book[el.getAttribute("data-book")]; });
+    var s = sym(doc.currency);
+    $$("#view-rates .money-in:not(.pct)").forEach(function (el) { el.setAttribute("data-sym", s); });
+    renderBookCards(); updateRateExample();
+  }
+  function updateRateExample() {
+    var c = doc.currency, lab = 2 * num(book.laborRate), parts = marked(50);
+    $("#rateExample").textContent = "2 hr × " + money(num(book.laborRate), c) + " = " + money(lab, c) +
+      "  +  parts " + money(50, c) + " + " + num(book.markup) + "% = " + money(parts, c) +
+      "  →  " + money(lab + parts, c) + " before tax";
+    $("#markupDesc").textContent = "Added on top of what you pay for parts. You pay " + money(100, c) + " → customer pays " + money(marked(100), c) + ".";
+  }
+  function bookResult(b) {
+    return "Customer pays <b>" + money(bookPrice(b), doc.currency) + "</b> per " + esc(b.unit) +
+      (b.kind === "mat" && num(book.markup) ? " (your cost + " + num(book.markup) + "%)" : "");
+  }
+  function renderBookCards() {
+    $("#book").innerHTML = book.items.map(function (b, i) {
+      var mat = b.kind === "mat";
+      return '<div class="bk-card">' +
+        '<div class="bk-top"><input id="bk-n-' + i + '" data-bi="' + i + '" data-bf="name" value="' + esc(b.name) + '" placeholder="Name, e.g. Braided supply line" aria-label="Name">' +
+        '<button type="button" class="x" data-bdel="' + i + '" aria-label="Remove ' + esc(b.name || "item") + '">✕</button></div>' +
+        '<div class="seg" role="group" aria-label="Type">' +
+          '<button type="button" data-bi="' + i + '" data-bkind="mat" aria-pressed="' + mat + '">Part I buy</button>' +
+          '<button type="button" data-bi="' + i + '" data-bkind="fixed" aria-pressed="' + !mat + '">Service, set price</button></div>' +
+        '<div class="bk-fields">' +
+          '<label>Unit<select id="bk-u-' + i + '" data-bi="' + i + '" data-bf="unit">' + unitOpts(b.unit) + "</select></label>" +
+          "<label>" + (mat ? "You pay" : "You charge") + '<span class="money-in" data-sym="' + esc(sym(doc.currency)) + '"><input id="bk-a-' + i + '" type="number" step="0.01" min="0" data-bi="' + i + '" data-bf="amt" value="' + esc(b.amt) + '"></span></label>' +
+        "</div>" +
+        '<div class="bk-result" id="bk-r-' + i + '">' + bookResult(b) + "</div></div>";
+    }).join("") || '<p class="empty">Nothing saved yet. Add the parts and services you charge for most.</p>';
+  }
+
+  // ---------- business
+  function renderBusiness() {
+    $$("[data-biz]").forEach(function (el) { el.value = biz[el.getAttribute("data-biz")] || ""; });
+    var has = !!biz.logo;
+    $("#logoThumb").hidden = !has; $("#clearLogo").hidden = !has;
+    if (has) $("#logoThumb").src = biz.logo;
+  }
+
+  // ---------- changes
+  function docChanged() {
+    doc.example = false;
+    persist(); renderPreview(); renderMinWarn(); updateBar(); renderBadge();
+  }
+  function handleField(el) {
+    if (el.hasAttribute("data-path")) {
+      setPath(doc, el.getAttribute("data-path"), el.hasAttribute("data-num") ? num(el.value) : el.value);
+      docChanged();
+    } else if (el.hasAttribute("data-i")) {
+      var i = +el.getAttribute("data-i"), it = doc.items[i], f = el.getAttribute("data-f");
+      it[f] = (f === "qty" || f === "rate") ? num(el.value) : el.value;
+      var hit = f === "desc" && findBook(el.value);
+      if (hit) {
+        it.unit = hit.unit; it.rate = bookPrice(hit);
+        var us = document.getElementById("it-u-" + i);
+        if (![].some.call(us.options, function (o) { return o.value === hit.unit; })) us.add(new Option(hit.unit));
+        us.value = hit.unit; document.getElementById("it-r-" + i).value = it.rate;
+      }
+      document.getElementById("it-a-" + i).textContent = money(num(it.qty) * num(it.rate), doc.currency);
+      docChanged();
+    } else if (el.hasAttribute("data-biz")) {
+      biz[el.getAttribute("data-biz")] = el.value; persist();
+    } else if (el.hasAttribute("data-book")) {
+      book[el.getAttribute("data-book")] = num(el.value);
+      book.items.forEach(function (b, j) { var r = document.getElementById("bk-r-" + j); if (r) r.innerHTML = bookResult(b); });
+      updateRateExample(); persist();
+    } else if (el.hasAttribute("data-bi") && el.hasAttribute("data-bf")) {
+      var j = +el.getAttribute("data-bi"), b = book.items[j], bf = el.getAttribute("data-bf");
+      b[bf] = bf === "amt" ? num(el.value) : el.value;
+      document.getElementById("bk-r-" + j).innerHTML = bookResult(b);
+      persist();
+    } else if (el.id === "w-trade") {
+      $("#w-rate").value = TRADE_DEFAULTS[el.value].laborRate;
+    }
+  }
+  document.addEventListener("input", function (e) { handleField(e.target); });
+  document.addEventListener("change", function (e) { if (e.target.tagName === "SELECT") handleField(e.target); });
+  $("#form").addEventListener("submit", function (e) { e.preventDefault(); });
+
+  function openDoc(d, toTicket) {
+    doc = d; tplOpen = !hasLines(d); selectedTpl = null;
+    $("#confirmDel").hidden = true; $("#tplSaveRow").hidden = true;
+    $("#main").classList.remove("show-preview"); $("#mToggle").textContent = "Preview ticket";
+    persist();
+    if (toTicket || view === "ticket") showView("ticket"); else renderTicketView();
+  }
+  function blank(kind) {
+    return { id: uid(), kind: kind, status: "draft", number: nextNumber(kind), date: today(), termsDays: kind === "quote" ? 30 : 14,
+      job: "", currency: doc ? doc.currency : "USD", client: { name: "", contact: "", address: "" },
+      items: [{ desc: "", qty: 1, unit: "hr", rate: 0 }], discount: 0, taxRate: num(book.taxRate), deposit: 0,
+      notes: kind === "quote" ? "Price includes labor and materials listed. Changes to scope are quoted separately." : "Thank you for your business.",
+      payInfo: kind === "quote" ? "" : (biz.payInfo || "") };
+  }
+  function newDoc(kind) {
+    if (kind === "invoice" && !canMakeInvoice()) { openPaywall(true); return; }
+    var d = blank(kind); if (kind === "invoice") claimInvoice(d); docs.push(d); openDoc(d, true); toast(kind === "quote" ? "New quote " + d.number : "New invoice " + d.number + freeNote()); }
+
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    if (b.hasAttribute("data-view")) { showView(b.getAttribute("data-view")); return; }
+    if (b.hasAttribute("data-open")) { openDoc(docs.filter(function (d) { return d.id === b.getAttribute("data-open"); })[0], true); return; }
+    if (b.hasAttribute("data-filter")) { filter = b.getAttribute("data-filter"); renderList(); return; }
+    if (b.hasAttribute("data-kind")) {
+      var k = b.getAttribute("data-kind");
+      if (k !== doc.kind) {
+        if (k === "invoice" && !claimInvoice(doc)) return;
+        doc.kind = k; doc.number = nextNumber(k); renderSegs(); $("#f-number").value = doc.number; docChanged();
+        if (k === "invoice") toast("Switched to invoice " + doc.number + freeNote());
+      }
+    } else if (b.hasAttribute("data-status")) {
+      doc.status = b.getAttribute("data-status"); renderSegs(); docChanged();
+    } else if (b.hasAttribute("data-del")) {
+      doc.items.splice(+b.getAttribute("data-del"), 1); renderItems(); docChanged();
+    } else if (b.hasAttribute("data-quick")) {
+      var q = b.getAttribute("data-quick");
+      var line = q === "labor" ? { desc: "Labor", qty: 1, unit: "hr", rate: num(book.laborRate) }
+        : q === "trip" ? { desc: "Service call", qty: 1, unit: "visit", rate: num(book.tripCharge) }
+        : { desc: "Haul-away & disposal", qty: 1, unit: "job", rate: num(book.disposalFee) };
+      var last = doc.items[doc.items.length - 1];
+      if (last && !last.desc && !num(last.rate)) doc.items.pop();
+      doc.items.push(line); renderItems(); docChanged();
+      var inp = document.getElementById((q === "labor" ? "it-q-" : "it-r-") + (doc.items.length - 1)); if (inp) inp.focus();
+    } else if (b.hasAttribute("data-trade")) {
+      tplTrade = b.getAttribute("data-trade"); selectedTpl = null; renderTpl();
+    } else if (b.hasAttribute("data-tpl")) {
+      selectedTpl = b.getAttribute("data-tpl") === selectedTpl ? null : b.getAttribute("data-tpl"); renderTpl();
+    } else if (b.id === "tplUse") {
+      var t = allTemplates().filter(function (x) { return x.id === selectedTpl; })[0]; if (!t) return;
+      var items = tplItems(t), replace = !hasLines(doc);
+      doc.items = replace ? items : doc.items.concat(items);
+      if (!doc.job) { doc.job = t.name; $("#f-job").value = t.name; }
+      tplOpen = false; selectedTpl = null;
+      renderItems(); renderTpl(); docChanged();
+      toast(replace ? "Filled in from “" + t.name + "”. Adjust any line." : "Added " + items.length + " lines");
+    } else if (b.id === "tplDel") {
+      var gone = myTemplates.filter(function (x) { return x.id === selectedTpl; })[0];
+      myTemplates = myTemplates.filter(function (x) { return x !== gone; });
+      selectedTpl = null; renderTpl(); persist(); toast("Deleted template “" + gone.name + "”");
+    } else if (b.id === "tplShow") { tplOpen = true; renderTpl(); }
+    else if (b.id === "tplHide") { tplOpen = false; selectedTpl = null; renderTpl(); }
+    else if (b.id === "minFix") {
+      var gap = Math.round((num(book.minCharge) - totals(doc).sub) * 100) / 100;
+      doc.items.push({ desc: "Minimum service charge", qty: 1, unit: "job", rate: gap });
+      renderItems(); docChanged(); toast("Added " + money(gap, doc.currency) + " to reach your minimum");
+    } else if (b.hasAttribute("data-bkind")) {
+      book.items[+b.getAttribute("data-bi")].kind = b.getAttribute("data-bkind"); renderBookCards(); persist();
+    } else if (b.hasAttribute("data-bdel")) {
+      book.items.splice(+b.getAttribute("data-bdel"), 1); renderBookCards(); persist();
+    }
+  });
+
+  $("#newQuote").addEventListener("click", function () { newDoc("quote"); });
+  $("#newInvoice").addEventListener("click", function () { newDoc("invoice"); });
+  $("#addLine").addEventListener("click", function () {
+    doc.items.push({ desc: "", qty: 1, unit: "ea", rate: 0 }); renderItems(); docChanged();
+    document.getElementById("it-d-" + (doc.items.length - 1)).focus();
+  });
+  $("#bookAdd").addEventListener("click", function () {
+    book.items.push({ id: uid(), name: "", unit: "ea", kind: "mat", amt: 0 }); renderBookCards(); persist();
+    document.getElementById("bk-n-" + (book.items.length - 1)).focus();
+  });
+  $("#mToggle").addEventListener("click", function () {
+    var on = $("#main").classList.toggle("show-preview");
+    $("#mToggle").textContent = on ? "Back to editing" : "Preview ticket";
+    window.scrollTo(0, 0);
+  });
+
+  $("#tplSaveOpen").addEventListener("click", function () {
+    if (!hasLines(doc)) { toast("Add some lines first, then save them as a template"); return; }
+    $("#tplSaveRow").hidden = false; $("#tplName").value = doc.job || ""; $("#tplName").focus();
+  });
+  $("#tplSaveNo").addEventListener("click", function () { $("#tplSaveRow").hidden = true; });
+  $("#tplSaveYes").addEventListener("click", function () {
+    var name = $("#tplName").value.trim();
+    if (!name) { $("#tplName").focus(); toast("Give the template a name"); return; }
+    // Keep lines tied to My rates where they match, so rate changes flow through.
+    var lines = doc.items.filter(function (it) { return it.desc || num(it.rate); }).map(function (it) {
+      var r = num(it.rate), l = { desc: it.desc, qty: num(it.qty), unit: it.unit, amt: r, k: "fixed" };
+      if (findBook(it.desc) && bookPrice(findBook(it.desc)) === r) l.k = "book";
+      else if (it.unit === "hr" && r === num(book.laborRate)) l.k = "labor";
+      else if (/service call|trip/i.test(it.desc) && r === num(book.tripCharge)) l.k = "trip";
+      else if (/disposal|haul/i.test(it.desc) && r === num(book.disposalFee)) l.k = "disposal";
+      return l;
+    });
+    myTemplates.unshift({ id: "u" + uid(), name: name, lines: lines });
+    $("#tplSaveRow").hidden = true; tplTrade = "Mine"; persist();
+    toast("Saved “" + name + "” to My templates");
+  });
+
+  $("#dupBtn").addEventListener("click", function () {
+    var d = JSON.parse(JSON.stringify(doc)); d.counted = false;
+    if (d.kind === "invoice" && !claimInvoice(d)) return;
+    d.id = uid(); d.example = false; d.status = "draft"; d.date = today(); d.number = nextNumber(d.kind);
+    docs.push(d); openDoc(d); toast("Copied to " + d.number + (d.kind === "invoice" ? freeNote() : ""));
+  });
+  $("#convertBtn").addEventListener("click", function () {
+    var d = JSON.parse(JSON.stringify(doc)); d.counted = false; d.example = false;
+    if (!claimInvoice(d)) return;
+    d.id = uid(); d.example = false; d.kind = "invoice"; d.status = "draft";
+    d.date = today(); d.termsDays = 14; d.number = nextNumber("invoice"); d.notes = "Thank you for your business.";
+    d.payInfo = biz.payInfo || ""; d.job = d.job + (doc.number ? " (from " + doc.number + ")" : "");
+    doc.status = "paid"; // the quote is now accepted
+    docs.push(d); openDoc(d); toast("Invoice " + d.number + " created. Quote marked accepted" + (freeNote() || "."));
+  });
+  $("#delBtn").addEventListener("click", function () { $("#confirmDel").hidden = false; });
+  $("#delNo").addEventListener("click", function () { $("#confirmDel").hidden = true; });
+  $("#delYes").addEventListener("click", function () {
+    var gone = doc.number;
+    docs = docs.filter(function (d) { return d.id !== doc.id; });
+    if (!docs.length) docs.push(blank("invoice"));
+    openDoc(docs[docs.length - 1]); renderBadge(); toast("Deleted " + gone);
+  });
+
+  // Setup
+  $("#w-save").addEventListener("click", function () {
+    var trade = $("#w-trade").value, d = TRADE_DEFAULTS[trade], name = $("#w-name").value.trim();
+    Object.keys(d).forEach(function (k) { book[k] = d[k]; });
+    book.laborRate = num($("#w-rate").value) || d.laborRate;
+    book.trade = trade; tplTrade = trade;
+    if (trade !== "Plumbing") book.items = [];
+    if (name) biz = { name: name, phone: "", email: "", address: "", license: "", logo: "", payInfo: "" };
+    setupDone = true;
+    newDoc("quote");
+    toast("You're set up. Pick a template, or add lines yourself.");
+  });
+  $("#w-skip").addEventListener("click", function () { setupDone = true; $("#welcome").hidden = true; persist(); });
+
+  // Logo
+  $("#b-logo").addEventListener("change", function (e) {
+    var f = e.target.files && e.target.files[0]; if (!f) return;
+    var img = new Image(), r = new FileReader();
+    r.onload = function () {
+      img.onload = function () {
+        var scale = Math.min(1, 320 / img.width, 160 / img.height), cv = document.createElement("canvas");
+        cv.width = Math.round(img.width * scale); cv.height = Math.round(img.height * scale);
+        cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
+        biz.logo = cv.toDataURL("image/png"); renderBusiness(); persist(); toast("Logo added");
+      };
+      img.src = r.result;
+    };
+    r.readAsDataURL(f);
+  });
+  $("#clearLogo").addEventListener("click", function () { biz.logo = ""; $("#b-logo").value = ""; renderBusiness(); persist(); });
+
+  // Copy as text
+  function asText() {
+    var t = totals(doc), q = doc.kind === "quote", c = doc.currency, L = [];
+    L.push((q ? "QUOTE " : "INVOICE ") + doc.number + " from " + (biz.name || ""));
+    L.push("Date: " + fmtDate(doc.date) + (q ? (num(doc.termsDays) ? " · Valid until " + fmtDate(dueDate(doc)) : "") : " · " + (num(doc.termsDays) ? "Due " + fmtDate(dueDate(doc)) : "Due on receipt")));
+    if (doc.client.name) L.push((q ? "For: " : "Bill to: ") + doc.client.name);
+    if (doc.job) L.push("Job: " + doc.job);
+    L.push("");
+    doc.items.forEach(function (it) { if (it.desc || num(it.rate)) L.push("• " + it.desc + ": " + num(it.qty) + " " + it.unit + " × " + money(num(it.rate), c) + " = " + money(num(it.qty) * num(it.rate), c)); });
+    L.push("");
+    L.push("Subtotal: " + money(t.sub, c));
+    if (t.disc) L.push("Discount: −" + money(t.disc, c));
+    if (num(doc.taxRate)) L.push("Tax (" + num(doc.taxRate) + "%): " + money(t.tax, c));
+    L.push("TOTAL: " + money(t.total, c));
+    if (t.dep) L.push((q ? "Deposit to start: " : "Deposit received: −") + money(t.dep, c));
+    if (!q) L.push((doc.status === "paid" ? "PAID IN FULL" : "BALANCE DUE: " + money(t.balance, c)));
+    if (doc.notes) { L.push(""); L.push(doc.notes); }
+    if (!q && doc.payInfo) { L.push(""); L.push("How to pay:"); L.push(doc.payInfo); }
+    L.push(""); L.push([biz.name, biz.phone, biz.email].filter(Boolean).join(" · "));
+    return L.join("\n");
+  }
+  $("#copyText").addEventListener("click", function () {
+    var txt = asText();
+    function fallback() { $("#copyWrap").hidden = false; var box = $("#copyBox"); box.value = txt; box.focus(); box.select(); }
+    try {
+      navigator.clipboard.writeText(txt).then(function () { $("#copyWrap").hidden = true; toast("Copied. Paste it into a text or email."); }, fallback);
+    } catch (e) { fallback(); }
+  });
+
+  if (window.JT_PRINT) { $("#printBtn").hidden = false; $("#printBtn").addEventListener("click", function () { window.print(); }); }
+
+  var toastTimer;
+  function toast(msg) { var t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.hidden = true; }, 2600); }
+
+  tplOpen = !hasLines(doc);
+  renderBadge(); renderPlan();
+  showView(location.hash.slice(1), true);
+})();
+</script>
