@@ -21,6 +21,7 @@ New users get a 30-second setup (trade, hourly rate, business name) that fills i
 - Everyone gets **3 free invoices**. Quotes are always free.
 - On the 4th invoice an upgrade screen appears with your price, a **Buy now** button (your payment link) and a box for an unlock code.
 - Unlocking gives unlimited invoices and removes "Made with Job Ticket" from tickets.
+- To stop one invoice being reused for new jobs on the free plan: once an invoice is copied or printed, its customer can't be changed (prices and notes still can), and once it's marked Paid the whole invoice is locked. "Repeat this job" makes a new invoice from it. Upgraded users can edit everything.
 
 ### Before you launch, edit these lines near the top of the script in `index.html` (and `app.html`)
 ```js

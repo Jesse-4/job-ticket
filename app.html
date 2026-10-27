@@ -323,6 +323,8 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
 .code-row { display: flex; gap: 8px; }
 .code-row input { font-family: var(--f-mono); text-transform: uppercase; letter-spacing: 0.06em; }
 .code-err { color: var(--danger); font-size: 13px; }
+.cust-lock { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; font-size: 13px; color: var(--muted); padding: 9px 11px; border-radius: 8px; background: var(--ground); }
+.toast-act { margin-left: 12px; background: none; border: 0; color: var(--ground); text-decoration: underline; text-underline-offset: 3px; font-weight: 600; padding: 2px 4px; }
 .toast {
   position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 92px); transform: translateX(-50%);
   background: var(--ink); color: var(--ground); padding: 10px 16px; border-radius: 8px; font-size: 14px; z-index: 20;
@@ -426,6 +428,10 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
           <div class="grid2">
             <label>Job address<textarea id="f-caddr" data-path="client.address" rows="2"></textarea></label>
             <label>Job description<textarea id="f-job" data-path="job" rows="2" placeholder="e.g. Kitchen sink replacement"></textarea></label>
+          </div>
+          <div class="cust-lock" id="custLock" hidden>
+            <span id="custLockMsg"></span>
+            <button type="button" class="link keep" id="custNew">Start a new invoice</button>
           </div>
         </div>
 
@@ -820,6 +826,15 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
   function isPro() { return !!plan.unlocked; }
   // Free plan: a paid invoice is a closed record, so it can't be rewritten into a new job.
   function isLocked(d) { return d.kind === "invoice" && d.status === "paid" && !isPro(); }
+  // Free plan: once an invoice is sent (copied or printed), its customer is fixed, so it can't be reused for someone else.
+  function isCustLocked(d) { return d.kind === "invoice" && !!d.sentLock && !isPro(); }
+  var CUST_FIELDS = "#f-cname, #f-ccontact, #f-caddr";
+  function markSent() {
+    // Copying or printing is how a ticket goes out, so a draft becomes Sent.
+    if (doc.status === "draft") { doc.status = "sent"; renderSegs(); docChanged(); }
+    if (doc.kind !== "invoice" || isPro() || doc.sentLock) return false;
+    doc.sentLock = true; persist(); applyLock(); return true;
+  }
   function freeLeft() { return Math.max(0, FREE_INVOICES - plan.used); }
   function canMakeInvoice() { return isPro() || freeLeft() > 0; }
   // Count a ticket the first time it becomes an invoice. Returns false (and shows the upgrade) when out of free invoices.
@@ -923,6 +938,13 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
     $("#lockBar").hidden = !locked;
     if (locked) { $("#tplBox").hidden = true; $("#paidConfirm").hidden = true; }
     $$("#form input, #form select, #form textarea, #form button").forEach(function (el) { if (!el.closest(".keep")) el.disabled = locked; });
+    var cust = !locked && isCustLocked(doc);
+    $("#custLock").hidden = !cust;
+    if (cust) {
+      $$(CUST_FIELDS + ", #form [data-kind]").forEach(function (el) { el.disabled = true; });
+      $("#custLockMsg").textContent = (doc.client.name ? "Sent to " + doc.client.name + "." : "This invoice was sent.") +
+        " On the free plan the customer can't be changed after sending. Prices and notes can still be fixed.";
+    }
   }
   function renderSegs() {
     $$("[data-kind]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-kind") === doc.kind)); });
@@ -1157,6 +1179,7 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
   }
   function handleField(el) {
     if (isLocked(doc) && el.closest("#form") && !el.closest(".keep")) return;
+    if (isCustLocked(doc) && el.matches(CUST_FIELDS)) return;
     if (el.hasAttribute("data-path")) {
       setPath(doc, el.getAttribute("data-path"), el.hasAttribute("data-num") ? num(el.value) : el.value);
       docChanged();
@@ -1215,6 +1238,7 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
     if (b.hasAttribute("data-open")) { openDoc(docs.filter(function (d) { return d.id === b.getAttribute("data-open"); })[0], true); return; }
     if (b.hasAttribute("data-filter")) { filter = b.getAttribute("data-filter"); renderList(); return; }
     if (isLocked(doc) && b.closest("#form") && !b.closest(".keep")) return;
+    if (isCustLocked(doc) && b.hasAttribute("data-kind")) return;
     if (b.hasAttribute("data-kind")) {
       var k = b.getAttribute("data-kind");
       if (k !== doc.kind) {
@@ -1226,7 +1250,14 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
       var st = b.getAttribute("data-status");
       if (st === "paid" && doc.kind === "invoice" && !isPro() && doc.status !== "paid") { $("#paidConfirm").hidden = false; return; }
       $("#paidConfirm").hidden = true;
+      var prev = doc.status, target = doc;
       doc.status = st; renderSegs(); docChanged();
+      if (st === "paid" && prev !== "paid" && doc.kind === "invoice") {
+        toast("Marked " + doc.number + " as paid", { label: "Undo", fn: function () {
+          target.status = prev;
+          if (doc === target) { renderSegs(); docChanged(); } else persist();
+        } });
+      }
     } else if (b.hasAttribute("data-del")) {
       doc.items.splice(+b.getAttribute("data-del"), 1); renderItems(); docChanged();
     } else if (b.hasAttribute("data-quick")) {
@@ -1306,13 +1337,13 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
   });
 
   $("#dupBtn").addEventListener("click", function () {
-    var d = JSON.parse(JSON.stringify(doc)); d.counted = false;
+    var d = JSON.parse(JSON.stringify(doc)); d.counted = false; d.sentLock = false;
     if (d.kind === "invoice" && !claimInvoice(d)) return;
     d.id = uid(); d.example = false; d.status = "draft"; d.date = today(); d.number = nextNumber(d.kind);
     docs.push(d); openDoc(d); toast("Copied to " + d.number + (d.kind === "invoice" ? freeNote() : ""));
   });
   $("#convertBtn").addEventListener("click", function () {
-    var d = JSON.parse(JSON.stringify(doc)); d.counted = false; d.example = false;
+    var d = JSON.parse(JSON.stringify(doc)); d.counted = false; d.example = false; d.sentLock = false;
     if (!claimInvoice(d)) return;
     d.id = uid(); d.example = false; d.kind = "invoice"; d.status = "draft";
     d.date = today(); d.termsDays = 14; d.number = nextNumber("invoice"); d.notes = "Thank you for your business.";
@@ -1324,6 +1355,7 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
     doc.status = "paid"; $("#paidConfirm").hidden = true; docChanged(); renderTicketView();
     toast(doc.number + " marked paid and locked");
   });
+  $("#custNew").addEventListener("click", function () { newDoc("invoice"); });
   $("#paidNo").addEventListener("click", function () { $("#paidConfirm").hidden = true; });
   $("#lockRepeat").addEventListener("click", function () { $("#dupBtn").click(); });
   $("#lockUpgrade").addEventListener("click", function () { openPaywall(false); });
@@ -1394,17 +1426,28 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
     return L.join("\n");
   }
   $("#copyText").addEventListener("click", function () {
-    var txt = asText();
+    var txt = asText(), first = markSent();
+    var done = first ? "Copied. The customer on this invoice is now locked (free plan)." : "Copied. Paste it into a text or email.";
     function fallback() { $("#copyWrap").hidden = false; var box = $("#copyBox"); box.value = txt; box.focus(); box.select(); }
     try {
-      navigator.clipboard.writeText(txt).then(function () { $("#copyWrap").hidden = true; toast("Copied. Paste it into a text or email."); }, fallback);
+      navigator.clipboard.writeText(txt).then(function () { $("#copyWrap").hidden = true; toast(done); }, fallback);
     } catch (e) { fallback(); }
   });
 
+  window.addEventListener("beforeprint", markSent);
   if (window.JT_PRINT) { $("#printBtn").hidden = false; $("#printBtn").addEventListener("click", function () { window.print(); }); }
 
   var toastTimer;
-  function toast(msg) { var t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.hidden = true; }, 2600); }
+  function toast(msg, action) {
+    var t = $("#toast"); t.textContent = msg;
+    if (action) {
+      var bt = document.createElement("button"); bt.type = "button"; bt.className = "toast-act"; bt.textContent = action.label;
+      bt.addEventListener("click", function () { t.hidden = true; action.fn(); });
+      t.appendChild(bt);
+    }
+    t.hidden = false; clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.hidden = true; }, action ? 6000 : 2600);
+  }
 
   tplOpen = !hasLines(doc); snapExample();
   renderBadge(); renderPlan();
