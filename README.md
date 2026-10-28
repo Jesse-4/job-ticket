@@ -11,7 +11,7 @@ Nothing else is needed: no server and no database. Each customer's data stays in
 
 ## What it does
 The app has four tabs:
-- **Ticket:** write a quote or invoice. Start from a job template (priced from your rates) or add lines yourself; each line shows its amount. The ticket preview updates as you type. On phones, a bar at the bottom shows the total and switches between editing and preview.
+- **Ticket:** write a quote or invoice. Pick from about 70 common jobs across 10 trades (search by name, or browse your trade). Size-based jobs ask one question, like square feet or number of rooms, and scale the materials and hours. Jobs that aren't listed get a quick estimate from just the hours and materials cost. Everything is priced from your own rates. Each line reads "qty × price = amount". The ticket preview updates as you type. On phones, a bar at the bottom shows the total and switches between editing and preview.
 - **All tickets:** shows how much you're owed, what's overdue, open quotes and money collected, with filters. Overdue invoices are flagged automatically.
 - **My rates:** the price book. Hourly rate, markup on parts, service call fee, disposal fee, minimum job charge and sales tax, each with a plain explanation and a live worked example. Saved parts and services fill in automatically on tickets.
 - **Business:** name, contact, license, logo and default payment instructions.

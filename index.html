@@ -141,17 +141,19 @@ input[type="number"] { font-family: var(--f-mono); font-variant-numeric: tabular
 .form { display: grid; gap: 14px; min-width: 0; }
 
 .items { display: grid; gap: 8px; }
-.item, .items-head { display: grid; grid-template-columns: minmax(0, 1fr) 60px 74px 86px 84px 30px; gap: 6px; align-items: center; }
-.items-head { font: 500 11px/1 var(--f-mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
-.items-head .r, .item .amt { text-align: right; }
-.item .amt { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: 13px; white-space: nowrap; }
+/* Each line reads: description, then qty × price = amount */
+.item { display: grid; grid-template-columns: minmax(0, 1fr) 34px; gap: 6px; align-items: center; padding-bottom: 10px; border-bottom: 1px dashed var(--line); }
+.item .calc { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(48px, 72px) minmax(64px, 90px) 12px minmax(72px, 110px) minmax(76px, 1fr); gap: 6px; align-items: center; }
+.item .calc input, .item .calc select { padding: 8px 6px; font-size: 14.5px; }
+.item .calc .money-in::before { left: 7px; }
+.item .calc .money-in input { padding-left: 19px; }
+.item .calc input::-webkit-inner-spin-button, .item .calc input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.item .calc input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+@container (max-width: 380px) { .item .calc { grid-template-columns: minmax(44px, 1fr) minmax(58px, 1.1fr) 10px minmax(66px, 1.3fr) minmax(70px, 1.4fr); gap: 5px; } .item .amt { font-size: 13px; } }
+.item .op { color: var(--muted); text-align: center; font-family: var(--f-mono); }
+.item .amt { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: 13.5px; white-space: nowrap; text-align: right; }
+.item .amt::before { content: "= "; color: var(--muted); }
 .item .x, .x { padding: 8px 0; color: var(--muted); border: 0; background: none; }
-@container (max-width: 520px) {
-  .items-head { display: none; }
-  .item { grid-template-columns: repeat(4, minmax(0, 1fr)); padding-bottom: 10px; border-bottom: 1px dashed var(--line); }
-  .item .desc { grid-column: 1 / span 3; }
-  .item .x { grid-row: 1; grid-column: 4; justify-self: end; padding-inline: 10px; }
-}
 .quick { display: flex; flex-wrap: wrap; gap: 6px; }
 .quick button { font-size: 13px; padding: 7px 10px; }
 .subrow { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; }
@@ -159,6 +161,16 @@ input[type="number"] { font-family: var(--f-mono); font-variant-numeric: tabular
 .tpl { display: grid; gap: 10px; padding: 12px; background: var(--ground); border-radius: 10px; }
 .tpl-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .tpl-top strong { font-size: 14px; }
+.tpl-find { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+.tpl-find input, .tpl-find select { background: var(--panel); }
+@container (max-width: 460px) { .tpl-find { grid-template-columns: minmax(0, 1fr); } }
+.tpl-ask { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; color: var(--ink); font-size: 14px; font-weight: 500; }
+.tpl-ask input { width: 110px; background: var(--ground); }
+.tpl-empty { font-size: 13.5px; color: var(--muted); padding: 4px 2px; grid-column: 1 / -1; margin: 0; }
+.tpl-card .tr { font: 500 10.5px/1 var(--f-mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.quick-est { display: grid; gap: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
+.quick-est input { background: var(--ground); }
+.tpl > .link { justify-self: start; }
 .tpl-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 6px; }
 .tpl-card { display: grid; gap: 3px; text-align: left; padding: 10px 11px; background: var(--panel); line-height: 1.3; }
 .tpl-card .nm { font-weight: 500; }
@@ -331,10 +343,11 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
 .code-row input { font-family: var(--f-mono); text-transform: uppercase; letter-spacing: 0.06em; }
 .code-err { color: var(--danger); font-size: 13px; }
 .cust-lock { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; font-size: 13px; color: var(--muted); padding: 9px 11px; border-radius: 8px; background: var(--ground); }
-.toast-act { margin-left: 12px; background: none; border: 0; color: var(--ground); text-decoration: underline; text-underline-offset: 3px; font-weight: 600; padding: 2px 4px; }
+.toast-act { pointer-events: auto; margin-left: 12px; background: none; border: 0; color: var(--ground); text-decoration: underline; text-underline-offset: 3px; font-weight: 600; padding: 2px 4px; }
 .toast {
   position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 92px); transform: translateX(-50%);
   background: var(--ink); color: var(--ground); padding: 10px 16px; border-radius: 8px; font-size: 14px; z-index: 20;
+  pointer-events: none; /* taps go through to the page, except the toast's own button */
   max-width: calc(100vw - 32px);
 }
 @media (min-width: 921px) { .toast { bottom: calc(env(safe-area-inset-bottom, 0px) + 22px); } }
@@ -381,8 +394,9 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
       <div class="grid3">
         <label>Your trade
           <select id="w-trade">
-            <option>Plumbing</option><option>Electrical</option><option>Handyman</option>
-            <option>Cleaning</option><option>Landscaping</option><option>Painting</option>
+            <option>Plumbing</option><option>Electrical</option><option>HVAC</option><option>Handyman</option>
+            <option>Cleaning</option><option>Landscaping</option><option>Painting</option><option>Roofing</option>
+            <option>Flooring</option><option>Pressure washing</option><option>Other</option>
           </select>
         </label>
         <label>What you charge per hour
@@ -451,13 +465,25 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
         <div class="panel">
           <p class="panel-title">Work &amp; materials</p>
           <div class="tpl" id="tplBox">
-            <div class="tpl-top"><strong>Start from a job template</strong><button type="button" class="link" id="tplHide">Hide</button></div>
-            <div class="chips" id="tplTrades"></div>
+            <div class="tpl-top"><strong>Pick the job</strong><button type="button" class="link" id="tplHide">Hide</button></div>
+            <div class="tpl-find">
+              <input id="tplSearch" type="search" placeholder="Search jobs (e.g. water heater)" aria-label="Search jobs" autocomplete="off">
+              <select id="tplTradeSel" aria-label="Which trade's jobs to show"></select>
+            </div>
             <div class="tpl-cards" id="tplCards"></div>
             <div class="tpl-preview" id="tplPreview" hidden></div>
+            <button type="button" class="link" id="qeOpen">Job not listed? Make a quick estimate</button>
+            <div class="quick-est" id="quickEst" hidden>
+              <strong>Quick estimate</strong>
+              <div class="grid3">
+                <label>Job<input id="qe-name" placeholder="e.g. Replace bathroom fan"></label>
+                <label>Hours of work<input id="qe-hours" type="number" min="0" step="0.25" inputmode="decimal" placeholder="2"></label>
+                <label>Materials (what you pay)<span class="money-in" data-sym="$" id="sym-qe"><input id="qe-mat" type="number" min="0" step="1" inputmode="decimal" placeholder="0"></span></label>
+              </div>
+              <div class="subrow"><button type="button" id="qeAdd" class="primary">Add to ticket</button><span class="hint" id="qeSum"></span></div>
+            </div>
           </div>
           <datalist id="bookList"></datalist>
-          <div class="items-head"><span>Description</span><span>Qty</span><span>Unit</span><span>Rate</span><span class="r">Amount</span><span></span></div>
           <div class="items" id="items"></div>
           <div class="quick">
             <button type="button" id="addLine">+ Line</button>
@@ -577,7 +603,15 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
           <label>Email<input id="b-email" data-biz="email"></label>
           <label>License # (optional)<input id="b-license" data-biz="license"></label>
         </div>
-        <label>Address<input id="b-addr" data-biz="address"></label>
+        <div class="grid2">
+          <label>Address<input id="b-addr" data-biz="address"></label>
+          <label>Currency
+            <select id="b-currency" data-biz="currency">
+              <option value="USD">US dollar ($)</option><option value="CAD">Canadian dollar ($)</option><option value="MXN">Mexican peso ($)</option>
+              <option value="GBP">British pound (£)</option><option value="EUR">Euro (€)</option><option value="AUD">Australian dollar ($)</option>
+            </select>
+          </label>
+        </div>
         <label>Default "How to pay you" for new invoices<textarea id="b-pay" data-biz="payInfo" rows="2" placeholder="Zelle, Venmo, check payable to…"></textarea></label>
         <div class="logo-row">
           <label style="flex:1">Logo (optional)<input id="b-logo" type="file" accept="image/*"></label>
@@ -672,74 +706,310 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
     Handyman:    { laborRate: 65, tripCharge: 0,  disposalFee: 40, minCharge: 100, markup: 15 },
     Cleaning:    { laborRate: 40, tripCharge: 0,  disposalFee: 0,  minCharge: 120, markup: 0 },
     Landscaping: { laborRate: 50, tripCharge: 0,  disposalFee: 15, minCharge: 60,  markup: 15 },
-    Painting:    { laborRate: 55, tripCharge: 0,  disposalFee: 0,  minCharge: 200, markup: 15 }
+    Painting:    { laborRate: 55, tripCharge: 0,  disposalFee: 0,  minCharge: 200, markup: 15 },
+    HVAC:        { laborRate: 110, tripCharge: 89, disposalFee: 50, minCharge: 150, markup: 25 },
+    Roofing:     { laborRate: 75, tripCharge: 0,  disposalFee: 150, minCharge: 300, markup: 20 },
+    Flooring:    { laborRate: 55, tripCharge: 0,  disposalFee: 100, minCharge: 250, markup: 15 },
+    "Pressure washing": { laborRate: 65, tripCharge: 0, disposalFee: 0, minCharge: 150, markup: 0 },
+    Other:       { laborRate: 60, tripCharge: 0,  disposalFee: 0,  minCharge: 100, markup: 15 }
   };
 
+// Starter jobs. Hours and material costs are typical US figures (what the pro pays, before markup),
+  // meant as a starting point the business adjusts. k: labor = hours at your rate, trip/disposal = your fees,
+  // mat = your cost before markup, fixed = flat price, book = a My rates item by name.
+  // ask: one size question; lines with per: true multiply their qty by the answer.
+  // kw: extra search words, so "hot water" finds the water heater.
   var STARTER = [
-    { trade: "Plumbing", name: "Water heater replacement (50 gal gas)", lines: [
+    // ---- Plumbing
+    { trade: "Plumbing", name: "Water heater replacement, 50 gal gas", kw: "hot water tank heater gas", lines: [
       { k: "mat", desc: "50 gal gas water heater", qty: 1, unit: "ea", amt: 750 },
-      { k: "mat", desc: "Flex connectors, valve, venting parts", qty: 1, unit: "ea", amt: 60 },
-      { k: "labor", desc: "Labor: remove old tank & install", qty: 4.5, unit: "hr" },
+      { k: "mat", desc: "Gas flex line, water connectors, valve & venting parts", qty: 1, unit: "ea", amt: 65 },
+      { k: "labor", desc: "Labor: drain & remove old tank, install & test", qty: 4, unit: "hr" },
       { k: "disposal", desc: "Haul-away & disposal of old tank", qty: 1, unit: "ea" }] },
-    { trade: "Plumbing", name: "Toilet replacement", lines: [
+    { trade: "Plumbing", name: "Water heater replacement, 50 gal electric", kw: "hot water tank heater electric", lines: [
+      { k: "mat", desc: "50 gal electric water heater", qty: 1, unit: "ea", amt: 620 },
+      { k: "mat", desc: "Water connectors, valve & fittings", qty: 1, unit: "ea", amt: 40 },
+      { k: "labor", desc: "Labor: drain & remove old tank, install & test", qty: 3, unit: "hr" },
+      { k: "disposal", desc: "Haul-away & disposal of old tank", qty: 1, unit: "ea" }] },
+    { trade: "Plumbing", name: "Tankless water heater install (gas)", kw: "hot water on demand", lines: [
+      { k: "mat", desc: "Tankless gas water heater", qty: 1, unit: "ea", amt: 1200 },
+      { k: "mat", desc: "Venting, gas line upgrade, valves & fittings", qty: 1, unit: "ea", amt: 260 },
+      { k: "labor", desc: "Labor: remove old tank, install, vent & test", qty: 8, unit: "hr" },
+      { k: "disposal", desc: "Haul-away & disposal of old tank", qty: 1, unit: "ea" }] },
+    { trade: "Plumbing", name: "Toilet replacement", kw: "commode wc", lines: [
       { k: "mat", desc: "Toilet, standard height", qty: 1, unit: "ea", amt: 220 },
       { k: "mat", desc: "Wax ring, bolts & supply line", qty: 1, unit: "ea", amt: 25 },
-      { k: "labor", desc: "Labor: remove & install toilet", qty: 2, unit: "hr" },
+      { k: "labor", desc: "Labor: remove old toilet & install new", qty: 1.5, unit: "hr" },
       { k: "disposal", desc: "Disposal of old toilet", qty: 1, unit: "ea" }] },
-    { trade: "Plumbing", name: "Kitchen faucet install (customer-supplied)", lines: [
+    { trade: "Plumbing", name: "Toilet repair (fill valve & flapper)", kw: "running toilet leak", lines: [
+      { k: "trip", desc: "Service call", qty: 1, unit: "visit" },
+      { k: "mat", desc: "Fill valve, flapper & supply line", qty: 1, unit: "ea", amt: 30 },
+      { k: "labor", desc: "Labor: rebuild tank & test", qty: 0.75, unit: "hr" }] },
+    { trade: "Plumbing", name: "Faucet install (customer-supplied)", kw: "kitchen bathroom sink tap", lines: [
       { k: "trip", desc: "Service call", qty: 1, unit: "visit" },
       { k: "mat", desc: "Supply lines", qty: 2, unit: "ea", amt: 12 },
       { k: "labor", desc: "Labor: remove old faucet & install new", qty: 1.25, unit: "hr" }] },
-    { trade: "Plumbing", name: "Drain clog clearing", lines: [
+    { trade: "Plumbing", name: "Drain clog clearing", kw: "clogged sink tub shower snake", lines: [
       { k: "trip", desc: "Service call", qty: 1, unit: "visit" },
       { k: "labor", desc: "Labor: snake & clear drain", qty: 1, unit: "hr" },
       { k: "fixed", desc: "Drain machine use", qty: 1, unit: "job", amt: 45 }] },
-    { trade: "Plumbing", name: "Garbage disposal replacement", lines: [
-      { k: "mat", desc: "Garbage disposal, 1/2 hp", qty: 1, unit: "ea", amt: 140 },
+    { trade: "Plumbing", name: "Main sewer line cleaning", kw: "sewer backup rooter mainline", lines: [
+      { k: "trip", desc: "Service call", qty: 1, unit: "visit" },
+      { k: "labor", desc: "Labor: clear main line through cleanout", qty: 1.5, unit: "hr" },
+      { k: "fixed", desc: "Sewer machine use", qty: 1, unit: "job", amt: 125 }] },
+    { trade: "Plumbing", name: "Garbage disposal replacement", kw: "garburator", lines: [
+      { k: "mat", desc: "Garbage disposal, 1/2 hp", qty: 1, unit: "ea", amt: 130 },
       { k: "mat", desc: "Fittings & cord kit", qty: 1, unit: "ea", amt: 18 },
-      { k: "labor", desc: "Labor: remove & install disposal", qty: 1.5, unit: "hr" },
+      { k: "labor", desc: "Labor: remove & install disposal", qty: 1.25, unit: "hr" },
       { k: "disposal", desc: "Disposal of old unit", qty: 1, unit: "ea" }] },
-    { trade: "Electrical", name: "Ceiling fan install (existing box)", lines: [
+    { trade: "Plumbing", name: "Leak repair under sink", kw: "pipe drip trap", lines: [
+      { k: "trip", desc: "Service call", qty: 1, unit: "visit" },
+      { k: "mat", desc: "Trap, fittings & sealant", qty: 1, unit: "ea", amt: 22 },
+      { k: "labor", desc: "Labor: find & repair leak", qty: 1, unit: "hr" }] },
+    { trade: "Plumbing", name: "Shutoff valve replacement", kw: "angle stop valve", ask: { label: "How many valves?", unit: "valve", def: 2 }, lines: [
+      { k: "trip", desc: "Service call", qty: 1, unit: "visit" },
+      { k: "mat", desc: "Quarter-turn shutoff valve", qty: 1, unit: "ea", amt: 14, per: true },
+      { k: "labor", desc: "Labor: shut water, replace valves", qty: 0.5, unit: "hr", per: true }] },
+    { trade: "Plumbing", name: "Sump pump replacement", kw: "basement pump", lines: [
+      { k: "mat", desc: "Sump pump, 1/3 hp", qty: 1, unit: "ea", amt: 180 },
+      { k: "mat", desc: "Check valve & fittings", qty: 1, unit: "ea", amt: 35 },
+      { k: "labor", desc: "Labor: remove & install pump, test", qty: 2, unit: "hr" },
+      { k: "disposal", desc: "Disposal of old pump", qty: 1, unit: "ea" }] },
+
+    // ---- Electrical
+    { trade: "Electrical", name: "Ceiling fan install", kw: "fan light", lines: [
       { k: "trip", desc: "Service call", qty: 1, unit: "visit" },
       { k: "mat", desc: "Fan-rated brace & box", qty: 1, unit: "ea", amt: 22 },
       { k: "labor", desc: "Labor: assemble & install fan", qty: 2, unit: "hr" }] },
-    { trade: "Electrical", name: "Replace outlets / switches (5)", lines: [
+    { trade: "Electrical", name: "Light fixture swap (customer-supplied)", kw: "lamp chandelier", ask: { label: "How many fixtures?", unit: "fixture", def: 1 }, lines: [
       { k: "trip", desc: "Service call", qty: 1, unit: "visit" },
-      { k: "mat", desc: "Outlet or switch, with plate", qty: 5, unit: "ea", amt: 6 },
-      { k: "labor", desc: "Labor: replace devices", qty: 1.5, unit: "hr" }] },
-    { trade: "Electrical", name: "GFCI outlet install", lines: [
+      { k: "mat", desc: "Wire nuts & mounting hardware", qty: 1, unit: "ea", amt: 8, per: true },
+      { k: "labor", desc: "Labor: remove old fixture & install new", qty: 1, unit: "hr", per: true }] },
+    { trade: "Electrical", name: "Replace outlets or switches", kw: "receptacle plug switch", ask: { label: "How many outlets or switches?", unit: "device", def: 5 }, lines: [
+      { k: "trip", desc: "Service call", qty: 1, unit: "visit" },
+      { k: "mat", desc: "Outlet or switch, with plate", qty: 1, unit: "ea", amt: 6, per: true },
+      { k: "labor", desc: "Labor: replace devices", qty: 0.3, unit: "hr", per: true }] },
+    { trade: "Electrical", name: "GFCI outlet install", kw: "gfi outlet bathroom kitchen", lines: [
       { k: "trip", desc: "Service call", qty: 1, unit: "visit" },
       { k: "mat", desc: "GFCI outlet, 20A", qty: 1, unit: "ea", amt: 24 },
       { k: "labor", desc: "Labor: install & test GFCI", qty: 0.75, unit: "hr" }] },
-    { trade: "Handyman", name: "Drywall patch (fist-size to 2 ft)", lines: [
+    { trade: "Electrical", name: "Recessed lights (LED wafer)", kw: "can lights pot lights downlights", ask: { label: "How many lights?", unit: "light", def: 4 }, lines: [
+      { k: "trip", desc: "Service call", qty: 1, unit: "visit" },
+      { k: "mat", desc: "LED wafer light", qty: 1, unit: "ea", amt: 22, per: true },
+      { k: "mat", desc: "Wire, connectors & switch", qty: 1, unit: "ea", amt: 40 },
+      { k: "labor", desc: "Labor: cut, wire & install lights", qty: 1, unit: "hr", per: true }] },
+    { trade: "Electrical", name: "Hardwired smoke detectors", kw: "smoke alarm co detector", ask: { label: "How many detectors?", unit: "detector", def: 4 }, lines: [
+      { k: "trip", desc: "Service call", qty: 1, unit: "visit" },
+      { k: "mat", desc: "Hardwired smoke detector", qty: 1, unit: "ea", amt: 30, per: true },
+      { k: "labor", desc: "Labor: replace & test detectors", qty: 0.3, unit: "hr", per: true }] },
+    { trade: "Electrical", name: "New 20A circuit", kw: "dedicated circuit breaker outlet", lines: [
+      { k: "mat", desc: "Wire, breaker, box & outlet", qty: 1, unit: "ea", amt: 85 },
+      { k: "labor", desc: "Labor: run circuit & install", qty: 3, unit: "hr" }] },
+    { trade: "Electrical", name: "EV charger circuit (Level 2, charger supplied)", kw: "electric car tesla charger 240v", lines: [
+      { k: "mat", desc: "6/3 wire, 50A breaker, conduit & box", qty: 1, unit: "ea", amt: 320 },
+      { k: "labor", desc: "Labor: run 240V circuit & mount charger", qty: 4, unit: "hr" },
+      { k: "fixed", desc: "Permit & inspection (varies by city)", qty: 1, unit: "job", amt: 100 }] },
+    { trade: "Electrical", name: "Panel upgrade to 200A", kw: "service upgrade breaker box", lines: [
+      { k: "mat", desc: "200A panel & breakers", qty: 1, unit: "ea", amt: 900 },
+      { k: "mat", desc: "Meter base, wire & grounding", qty: 1, unit: "ea", amt: 400 },
+      { k: "labor", desc: "Labor: swap panel & reconnect circuits", qty: 10, unit: "hr" },
+      { k: "fixed", desc: "Permit & inspection (varies by city)", qty: 1, unit: "job", amt: 250 }] },
+
+    // ---- HVAC
+    { trade: "HVAC", name: "AC tune-up", kw: "air conditioner maintenance service check", lines: [
+      { k: "trip", desc: "Service call", qty: 1, unit: "visit" },
+      { k: "labor", desc: "Labor: clean coils, check charge & electrical", qty: 1, unit: "hr" },
+      { k: "mat", desc: "Filter & coil cleaner", qty: 1, unit: "ea", amt: 25 }] },
+    { trade: "HVAC", name: "Furnace tune-up", kw: "heater heating maintenance", lines: [
+      { k: "trip", desc: "Service call", qty: 1, unit: "visit" },
+      { k: "labor", desc: "Labor: inspect, clean burners & test safeties", qty: 1, unit: "hr" },
+      { k: "mat", desc: "Filter", qty: 1, unit: "ea", amt: 15 }] },
+    { trade: "HVAC", name: "AC capacitor replacement", kw: "ac not cooling run capacitor", lines: [
+      { k: "trip", desc: "Service call", qty: 1, unit: "visit" },
+      { k: "mat", desc: "Run capacitor", qty: 1, unit: "ea", amt: 35 },
+      { k: "labor", desc: "Labor: diagnose & replace capacitor", qty: 0.75, unit: "hr" }] },
+    { trade: "HVAC", name: "Refrigerant recharge (R-410A)", kw: "freon ac recharge leak", ask: { label: "Pounds of refrigerant?", unit: "lb", def: 2 }, lines: [
+      { k: "trip", desc: "Service call", qty: 1, unit: "visit" },
+      { k: "labor", desc: "Labor: leak check & recharge", qty: 1.5, unit: "hr" },
+      { k: "fixed", desc: "R-410A refrigerant", qty: 1, unit: "lb", amt: 110, per: true }] },
+    { trade: "HVAC", name: "Smart thermostat install (customer-supplied)", kw: "nest ecobee thermostat", lines: [
+      { k: "trip", desc: "Service call", qty: 1, unit: "visit" },
+      { k: "mat", desc: "C-wire adapter & wire", qty: 1, unit: "ea", amt: 15 },
+      { k: "labor", desc: "Labor: install, wire & set up thermostat", qty: 1, unit: "hr" }] },
+    { trade: "HVAC", name: "Blower motor replacement", kw: "furnace fan motor", lines: [
+      { k: "trip", desc: "Service call", qty: 1, unit: "visit" },
+      { k: "mat", desc: "Blower motor", qty: 1, unit: "ea", amt: 250 },
+      { k: "labor", desc: "Labor: replace motor & test", qty: 2, unit: "hr" }] },
+    { trade: "HVAC", name: "Mini-split install (12k BTU, single zone)", kw: "ductless heat pump", lines: [
+      { k: "mat", desc: "12k BTU mini-split system", qty: 1, unit: "ea", amt: 900 },
+      { k: "mat", desc: "Line set, pad, disconnect & wire", qty: 1, unit: "ea", amt: 200 },
+      { k: "labor", desc: "Labor: mount, run lines, vacuum & charge", qty: 8, unit: "hr" }] },
+
+    // ---- Handyman
+    { trade: "Handyman", name: "Drywall patch", kw: "hole wall repair sheetrock", lines: [
       { k: "trip", desc: "Visits (patch, then texture & paint)", qty: 2, unit: "visit" },
       { k: "mat", desc: "Drywall, mud, tape & paint", qty: 1, unit: "ea", amt: 30 },
       { k: "labor", desc: "Labor: patch, sand, texture, paint", qty: 3, unit: "hr" }] },
-    { trade: "Handyman", name: "TV wall mount", lines: [
+    { trade: "Handyman", name: "TV wall mount", kw: "television mount", lines: [
       { k: "mat", desc: "Anchors & cable cover", qty: 1, unit: "ea", amt: 15 },
-      { k: "labor", desc: "Labor: locate studs, mount TV, tidy cables", qty: 1.5, unit: "hr" }] },
-    { trade: "Handyman", name: "Interior prehung door install", lines: [
+      { k: "labor", desc: "Labor: find studs, mount TV, tidy cables", qty: 1.5, unit: "hr" }] },
+    { trade: "Handyman", name: "Interior door install (prehung)", kw: "door replacement", lines: [
       { k: "mat", desc: "Prehung interior door", qty: 1, unit: "ea", amt: 180 },
       { k: "mat", desc: "Trim, shims & hardware", qty: 1, unit: "ea", amt: 40 },
       { k: "labor", desc: "Labor: remove old door, hang & trim new", qty: 3, unit: "hr" },
       { k: "disposal", desc: "Disposal of old door", qty: 1, unit: "ea" }] },
-    { trade: "Cleaning", name: "Standard house clean (3 bed / 2 bath)", lines: [
-      { k: "labor", desc: "Cleaning labor", qty: 3, unit: "hr" },
+    { trade: "Handyman", name: "Deadbolt or lock install", kw: "door lock knob smart lock", lines: [
+      { k: "trip", desc: "Service call", qty: 1, unit: "visit" },
+      { k: "mat", desc: "Deadbolt", qty: 1, unit: "ea", amt: 45 },
+      { k: "labor", desc: "Labor: install & adjust lock", qty: 0.75, unit: "hr" }] },
+    { trade: "Handyman", name: "Furniture assembly", kw: "ikea assemble desk bed dresser", ask: { label: "How many pieces?", unit: "piece", def: 2 }, lines: [
+      { k: "labor", desc: "Labor: assemble furniture", qty: 1.5, unit: "hr", per: true }] },
+    { trade: "Handyman", name: "Recaulk tub or shower", kw: "caulking bathroom silicone", lines: [
+      { k: "mat", desc: "Silicone caulk & remover", qty: 1, unit: "ea", amt: 18 },
+      { k: "labor", desc: "Labor: remove old caulk & recaulk", qty: 1.5, unit: "hr" }] },
+    { trade: "Handyman", name: "Hang shelves, mirrors or pictures", kw: "hanging wall shelf", ask: { label: "How many items?", unit: "item", def: 4 }, lines: [
+      { k: "mat", desc: "Anchors & hardware", qty: 1, unit: "ea", amt: 3, per: true },
+      { k: "labor", desc: "Labor: measure, level & hang", qty: 0.3, unit: "hr", per: true }] },
+    { trade: "Handyman", name: "Fence picket repair", kw: "fence board replace", ask: { label: "How many pickets?", unit: "picket", def: 10 }, lines: [
+      { k: "mat", desc: "Fence picket", qty: 1, unit: "ea", amt: 3.5, per: true },
+      { k: "mat", desc: "Screws & hardware", qty: 1, unit: "ea", amt: 12 },
+      { k: "labor", desc: "Labor: remove & replace pickets", qty: 0.15, unit: "hr", per: true }] },
+    { trade: "Handyman", name: "Gutter cleaning (one story)", kw: "gutters downspout clean", ask: { label: "Feet of gutter?", unit: "ft", def: 150 }, lines: [
+      { k: "labor", desc: "Labor: clean gutters & flush downspouts", qty: 0.012, unit: "hr", per: true },
+      { k: "disposal", desc: "Debris disposal", qty: 1, unit: "job" }] },
+
+    // ---- Cleaning
+    { trade: "Cleaning", name: "Standard house clean", kw: "maid regular cleaning house", ask: { label: "How many bedrooms?", unit: "bedroom", def: 3 }, lines: [
+      { k: "labor", desc: "Cleaning labor", qty: 1, unit: "hr", per: true },
       { k: "mat", desc: "Supplies", qty: 1, unit: "job", amt: 12 }] },
-    { trade: "Cleaning", name: "Move-out deep clean", lines: [
-      { k: "labor", desc: "Deep cleaning labor (inside cabinets, appliances, baseboards)", qty: 6, unit: "hr" },
+    { trade: "Cleaning", name: "Deep clean", kw: "spring deep cleaning", ask: { label: "How many bedrooms?", unit: "bedroom", def: 3 }, lines: [
+      { k: "labor", desc: "Deep cleaning labor (baseboards, inside appliances, fixtures)", qty: 1.75, unit: "hr", per: true },
+      { k: "mat", desc: "Supplies", qty: 1, unit: "job", amt: 20 }] },
+    { trade: "Cleaning", name: "Move-out clean", kw: "move in move out end of lease", ask: { label: "How many bedrooms?", unit: "bedroom", def: 3 }, lines: [
+      { k: "labor", desc: "Move-out cleaning labor (inside cabinets & appliances)", qty: 2, unit: "hr", per: true },
       { k: "mat", desc: "Supplies", qty: 1, unit: "job", amt: 25 }] },
-    { trade: "Landscaping", name: "Mow, edge & blow (standard lot)", lines: [
+    { trade: "Cleaning", name: "Airbnb turnover", kw: "vacation rental str turnover", lines: [
+      { k: "labor", desc: "Turnover cleaning & restock", qty: 2, unit: "hr" },
+      { k: "fixed", desc: "Laundry (sheets & towels)", qty: 1, unit: "job", amt: 25 },
+      { k: "mat", desc: "Supplies", qty: 1, unit: "job", amt: 10 }] },
+    { trade: "Cleaning", name: "Office cleaning", kw: "commercial janitorial", ask: { label: "Office size (sq ft)?", unit: "sq ft", def: 2000 }, lines: [
+      { k: "labor", desc: "Office cleaning labor", qty: 0.0012, unit: "hr", per: true },
+      { k: "mat", desc: "Supplies", qty: 1, unit: "visit", amt: 15 }] },
+    { trade: "Cleaning", name: "Window cleaning", kw: "windows glass", ask: { label: "How many windows?", unit: "window", def: 15 }, lines: [
+      { k: "labor", desc: "Window cleaning, inside & out", qty: 0.25, unit: "hr", per: true },
+      { k: "mat", desc: "Supplies", qty: 1, unit: "job", amt: 10 }] },
+    { trade: "Cleaning", name: "Carpet cleaning", kw: "carpet steam shampoo rug", ask: { label: "How many rooms?", unit: "room", def: 3 }, lines: [
+      { k: "labor", desc: "Carpet cleaning labor", qty: 0.5, unit: "hr", per: true },
+      { k: "mat", desc: "Cleaning solution", qty: 1, unit: "ea", amt: 5, per: true }] },
+
+    // ---- Landscaping
+    { trade: "Landscaping", name: "Mow, edge & blow", kw: "lawn mowing grass cut yard", lines: [
       { k: "labor", desc: "Mow, edge & blow", qty: 1, unit: "hr" },
       { k: "fixed", desc: "Green waste disposal", qty: 1, unit: "job", amt: 15 }] },
-    { trade: "Landscaping", name: "Mulch install (4 cubic yards)", lines: [
-      { k: "mat", desc: "Bulk mulch", qty: 4, unit: "cu yd", amt: 40 },
+    { trade: "Landscaping", name: "Hedge & shrub trimming", kw: "bush pruning", lines: [
+      { k: "labor", desc: "Trim hedges & shrubs, clean up", qty: 2, unit: "hr" },
+      { k: "fixed", desc: "Green waste disposal", qty: 1, unit: "job", amt: 25 }] },
+    { trade: "Landscaping", name: "Yard cleanup (spring or fall)", kw: "leaves cleanup leaf removal", lines: [
+      { k: "labor", desc: "Leaf & debris cleanup, beds & lawn", qty: 4, unit: "hr" },
+      { k: "fixed", desc: "Green waste disposal", qty: 1, unit: "job", amt: 45 }] },
+    { trade: "Landscaping", name: "Mulch install", kw: "bark mulch beds", ask: { label: "Cubic yards of mulch?", unit: "cu yd", def: 4 }, lines: [
+      { k: "mat", desc: "Bulk mulch", qty: 1, unit: "cu yd", amt: 40, per: true },
       { k: "fixed", desc: "Material delivery", qty: 1, unit: "job", amt: 60 },
-      { k: "labor", desc: "Labor: weed, edge beds & spread mulch", qty: 4, unit: "hr" }] },
-    { trade: "Painting", name: "Repaint one room (12 x 12, walls only)", lines: [
-      { k: "mat", desc: "Interior paint", qty: 2, unit: "gal", amt: 50 },
-      { k: "mat", desc: "Tape, plastic, patch & rollers", qty: 1, unit: "job", amt: 25 },
-      { k: "labor", desc: "Labor: prep, cut in, two coats", qty: 7, unit: "hr" }] }
+      { k: "labor", desc: "Labor: weed, edge beds & spread mulch", qty: 1, unit: "hr", per: true }] },
+    { trade: "Landscaping", name: "Sod install", kw: "new lawn grass sod", ask: { label: "Lawn area (sq ft)?", unit: "sq ft", def: 500 }, lines: [
+      { k: "mat", desc: "Sod", qty: 1, unit: "sq ft", amt: 0.55, per: true },
+      { k: "fixed", desc: "Sod delivery", qty: 1, unit: "job", amt: 75 },
+      { k: "labor", desc: "Labor: remove old turf, grade & lay sod", qty: 0.02, unit: "hr", per: true }] },
+    { trade: "Landscaping", name: "Shrub & plant installation", kw: "planting plants bushes", ask: { label: "How many plants (5 gal)?", unit: "plant", def: 6 }, lines: [
+      { k: "mat", desc: "5 gal shrub", qty: 1, unit: "ea", amt: 35, per: true },
+      { k: "mat", desc: "Soil amendment & mulch", qty: 1, unit: "ea", amt: 8, per: true },
+      { k: "labor", desc: "Labor: dig, plant & water", qty: 0.5, unit: "hr", per: true }] },
+    { trade: "Landscaping", name: "Sprinkler head repair", kw: "irrigation sprinkler broken", ask: { label: "How many heads?", unit: "head", def: 3 }, lines: [
+      { k: "mat", desc: "Sprinkler head & fittings", qty: 1, unit: "ea", amt: 9, per: true },
+      { k: "labor", desc: "Labor: dig, replace & adjust heads", qty: 0.3, unit: "hr", per: true },
+      { k: "labor", desc: "Labor: test zones", qty: 0.5, unit: "hr" }] },
+
+    // ---- Painting
+    { trade: "Painting", name: "Interior room repaint (walls)", kw: "paint room bedroom walls", ask: { label: "How many rooms (about 12x12)?", unit: "room", def: 1 }, lines: [
+      { k: "mat", desc: "Interior paint", qty: 2, unit: "gal", amt: 50, per: true },
+      { k: "mat", desc: "Tape, plastic, patch & rollers", qty: 1, unit: "room", amt: 20, per: true },
+      { k: "labor", desc: "Labor: prep, cut in, two coats", qty: 6, unit: "hr", per: true }] },
+    { trade: "Painting", name: "Ceiling paint", kw: "ceilings", ask: { label: "How many rooms?", unit: "room", def: 1 }, lines: [
+      { k: "mat", desc: "Ceiling paint", qty: 1, unit: "gal", amt: 40, per: true },
+      { k: "labor", desc: "Labor: cover, cut in & roll ceiling", qty: 2.5, unit: "hr", per: true }] },
+    { trade: "Painting", name: "Doors & trim", kw: "door trim baseboard paint", ask: { label: "How many doors?", unit: "door", def: 4 }, lines: [
+      { k: "mat", desc: "Trim paint & supplies", qty: 1, unit: "door", amt: 10, per: true },
+      { k: "labor", desc: "Labor: sand, prime & paint door and casing", qty: 1, unit: "hr", per: true }] },
+    { trade: "Painting", name: "Cabinet painting", kw: "kitchen cabinets refinish", ask: { label: "How many doors & drawers?", unit: "piece", def: 20 }, lines: [
+      { k: "mat", desc: "Primer, cabinet paint & supplies", qty: 1, unit: "job", amt: 150 },
+      { k: "labor", desc: "Labor: remove, degloss, prime & spray", qty: 1.5, unit: "hr", per: true }] },
+    { trade: "Painting", name: "Exterior house paint", kw: "outside house siding", ask: { label: "House size (sq ft)?", unit: "sq ft", def: 1500 }, lines: [
+      { k: "mat", desc: "Exterior paint", qty: 0.008, unit: "gal", amt: 55, per: true },
+      { k: "mat", desc: "Caulk, primer, tape & plastic", qty: 1, unit: "job", amt: 120 },
+      { k: "labor", desc: "Labor: wash, scrape, prime & paint", qty: 0.025, unit: "hr", per: true }] },
+    { trade: "Painting", name: "Deck stain", kw: "deck staining seal", ask: { label: "Deck size (sq ft)?", unit: "sq ft", def: 300 }, lines: [
+      { k: "mat", desc: "Deck stain", qty: 0.005, unit: "gal", amt: 45, per: true },
+      { k: "mat", desc: "Deck cleaner & brightener", qty: 1, unit: "job", amt: 40 },
+      { k: "labor", desc: "Labor: clean, prep & stain", qty: 0.02, unit: "hr", per: true }] },
+
+    // ---- Roofing
+    { trade: "Roofing", name: "Shingle repair", kw: "missing shingles roof repair", lines: [
+      { k: "mat", desc: "Shingles, nails & sealant", qty: 1, unit: "ea", amt: 60 },
+      { k: "labor", desc: "Labor: remove damaged & install shingles", qty: 3, unit: "hr" }] },
+    { trade: "Roofing", name: "Roof leak inspection & seal", kw: "leaking roof", lines: [
+      { k: "labor", desc: "Labor: inspect, find & seal leak", qty: 2, unit: "hr" },
+      { k: "mat", desc: "Sealant & flashing tape", qty: 1, unit: "ea", amt: 25 }] },
+    { trade: "Roofing", name: "Asphalt reroof", kw: "new roof replacement shingles", ask: { label: "Roof size (squares, 100 sq ft each)?", unit: "sq", def: 20 }, lines: [
+      { k: "mat", desc: "Architectural shingles", qty: 1, unit: "sq", amt: 120, per: true },
+      { k: "mat", desc: "Underlayment, drip edge, nails & vents", qty: 1, unit: "sq", amt: 35, per: true },
+      { k: "labor", desc: "Labor: tear off & install (crew hours)", qty: 2.5, unit: "hr", per: true },
+      { k: "fixed", desc: "Dumpster & disposal", qty: 1, unit: "job", amt: 450 }] },
+    { trade: "Roofing", name: "Chimney flashing repair", kw: "chimney leak flashing", lines: [
+      { k: "mat", desc: "Step & counter flashing, sealant", qty: 1, unit: "ea", amt: 60 },
+      { k: "labor", desc: "Labor: remove & reflash chimney", qty: 3, unit: "hr" }] },
+    { trade: "Roofing", name: "Seamless gutter install", kw: "gutters aluminum new", ask: { label: "Feet of gutter?", unit: "ft", def: 150 }, lines: [
+      { k: "mat", desc: "Aluminum gutter, hangers & downspouts", qty: 1, unit: "ft", amt: 4, per: true },
+      { k: "labor", desc: "Labor: form & hang gutters", qty: 0.1, unit: "hr", per: true }] },
+
+    // ---- Flooring
+    { trade: "Flooring", name: "Luxury vinyl plank install", kw: "lvp vinyl floor", ask: { label: "Floor area (sq ft)?", unit: "sq ft", def: 300 }, lines: [
+      { k: "mat", desc: "Luxury vinyl plank", qty: 1.1, unit: "sq ft", amt: 2.75, per: true },
+      { k: "mat", desc: "Underlayment", qty: 1, unit: "sq ft", amt: 0.4, per: true },
+      { k: "mat", desc: "Transitions & trim", qty: 1, unit: "job", amt: 80 },
+      { k: "labor", desc: "Labor: prep & install flooring", qty: 0.04, unit: "hr", per: true },
+      { k: "disposal", desc: "Old flooring disposal", qty: 1, unit: "job" }] },
+    { trade: "Flooring", name: "Laminate install", kw: "laminate floor", ask: { label: "Floor area (sq ft)?", unit: "sq ft", def: 300 }, lines: [
+      { k: "mat", desc: "Laminate flooring", qty: 1.1, unit: "sq ft", amt: 2, per: true },
+      { k: "mat", desc: "Underlayment", qty: 1, unit: "sq ft", amt: 0.4, per: true },
+      { k: "mat", desc: "Transitions & trim", qty: 1, unit: "job", amt: 80 },
+      { k: "labor", desc: "Labor: prep & install flooring", qty: 0.04, unit: "hr", per: true },
+      { k: "disposal", desc: "Old flooring disposal", qty: 1, unit: "job" }] },
+    { trade: "Flooring", name: "Tile floor install", kw: "porcelain ceramic tile", ask: { label: "Floor area (sq ft)?", unit: "sq ft", def: 100 }, lines: [
+      { k: "mat", desc: "Porcelain tile", qty: 1.1, unit: "sq ft", amt: 3, per: true },
+      { k: "mat", desc: "Thinset, grout & backer board", qty: 1, unit: "sq ft", amt: 1.5, per: true },
+      { k: "labor", desc: "Labor: prep, set & grout tile", qty: 0.1, unit: "hr", per: true },
+      { k: "disposal", desc: "Old flooring disposal", qty: 1, unit: "job" }] },
+    { trade: "Flooring", name: "Carpet removal", kw: "rip out carpet", ask: { label: "Area (sq ft)?", unit: "sq ft", def: 300 }, lines: [
+      { k: "labor", desc: "Labor: remove carpet, pad & staples", qty: 0.01, unit: "hr", per: true },
+      { k: "disposal", desc: "Carpet disposal", qty: 1, unit: "job" }] },
+    { trade: "Flooring", name: "Baseboard install", kw: "baseboards trim molding", ask: { label: "Feet of baseboard?", unit: "ft", def: 100 }, lines: [
+      { k: "mat", desc: "Baseboard", qty: 1.1, unit: "ft", amt: 1.5, per: true },
+      { k: "mat", desc: "Nails, caulk & filler", qty: 1, unit: "job", amt: 20 },
+      { k: "labor", desc: "Labor: cut, install & caulk", qty: 0.05, unit: "hr", per: true }] },
+
+    // ---- Pressure washing
+    { trade: "Pressure washing", name: "Driveway washing", kw: "concrete power wash driveway", ask: { label: "Driveway size (sq ft)?", unit: "sq ft", def: 600 }, lines: [
+      { k: "labor", desc: "Surface clean & rinse", qty: 0.0025, unit: "hr", per: true },
+      { k: "mat", desc: "Degreaser & cleaning solution", qty: 1, unit: "sq ft", amt: 0.03, per: true }] },
+    { trade: "Pressure washing", name: "House soft wash", kw: "siding house wash", ask: { label: "House size (sq ft)?", unit: "sq ft", def: 2000 }, lines: [
+      { k: "labor", desc: "Soft wash siding, rinse windows", qty: 0.002, unit: "hr", per: true },
+      { k: "mat", desc: "Soft wash solution", qty: 1, unit: "sq ft", amt: 0.02, per: true }] },
+    { trade: "Pressure washing", name: "Deck or patio washing", kw: "patio deck pavers", ask: { label: "Area (sq ft)?", unit: "sq ft", def: 300 }, lines: [
+      { k: "labor", desc: "Wash & rinse deck or patio", qty: 0.005, unit: "hr", per: true },
+      { k: "mat", desc: "Cleaning solution", qty: 1, unit: "job", amt: 20 }] },
+    { trade: "Pressure washing", name: "Fence washing", kw: "fence clean", ask: { label: "Feet of fence?", unit: "ft", def: 150 }, lines: [
+      { k: "labor", desc: "Wash fence, both sides", qty: 0.02, unit: "hr", per: true },
+      { k: "mat", desc: "Cleaning solution", qty: 1, unit: "job", amt: 20 }] }
   ];
   STARTER.forEach(function (t, i) { t.id = "s" + i; });
 
@@ -779,6 +1049,10 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
     var dep = num(d.deposit);
     return { sub: sub, disc: disc, tax: tax, total: total, dep: dep, balance: total - dep };
   }
+  function moneyRound(n, cur) {
+    try { return new Intl.NumberFormat(undefined, { style: "currency", currency: cur || "USD", maximumFractionDigits: 0 }).format(Math.round(n)); }
+    catch (e) { return money(n, cur); }
+  }
   function money(n, cur) {
     try { return new Intl.NumberFormat(undefined, { style: "currency", currency: cur || "USD" }).format(n); }
     catch (e) { return (cur || "") + " " + n.toFixed(2); }
@@ -801,11 +1075,34 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
     if (l.k === "book") { var b = findBook(l.desc); return b ? bookPrice(b) : num(l.amt); }
     return num(l.amt);
   }
-  function tplItems(t) {
-    return t.lines.map(function (l) { return { desc: l.desc, qty: l.qty, unit: l.unit, rate: linePrice(l) }; })
-      .filter(function (it) { return num(it.rate) > 0; }); // a $0 service fee means "I don't charge one"
+  function tplSize(t, ans) { return t.ask ? (num(ans) > 0 ? num(ans) : t.ask.def) : 1; }
+  function tplItems(t, ans) {
+    var a = tplSize(t, ans);
+    return t.lines.map(function (l) {
+      var q = l.per ? l.qty * a : l.qty;
+      q = l.unit === "gal" ? Math.ceil(q - 0.001) : Math.round(q * 100) / 100; // paint comes in whole gallons
+      return { desc: l.desc, qty: q, unit: l.unit, rate: linePrice(l) };
+    }).filter(function (it) { return num(it.rate) > 0 && it.qty > 0; }); // a $0 fee means "I don't charge one"
   }
-  function tplSum(t) { return tplItems(t).reduce(function (s, it) { return s + num(it.qty) * num(it.rate); }, 0); }
+  function tplSum(t, ans) { return tplItems(t, ans).reduce(function (s, it) { return s + num(it.qty) * num(it.rate); }, 0); }
+  // Search by job name, extra keywords and trade; "toilets" finds "toilet".
+  function tplSearch(q) {
+    var words = q.toLowerCase().split(/[^a-z0-9]+/).filter(function (w) { return w.length > 1; })
+      .map(function (w) { return w.length > 3 ? w.replace(/s$/, "") : w; });
+    if (!words.length) return [];
+    var scored = allTemplates().map(function (t) {
+      var name = t.name.toLowerCase(), hay = name + " " + (t.kw || "") + " " + (t.trade || "my template").toLowerCase();
+      var hits = words.filter(function (w) { return hay.indexOf(w) > -1; }).length;
+      if (!hits) return null;
+      var score = hits * 10 + words.filter(function (w) { return name.indexOf(w) > -1; }).length * 3 +
+        (t.trade === book.trade ? 2 : 0) + (t.trade ? 0 : 4);
+      return { t: t, all: hits === words.length, score: score };
+    }).filter(Boolean);
+    var full = scored.filter(function (x) { return x.all; });
+    var list = (full.length ? full : scored).sort(function (a, b) { return b.score - a.score; }).map(function (x) { return x.t; });
+    list.exact = full.length > 0;
+    return list;
+  }
   function allTemplates() { return myTemplates.concat(STARTER); }
 
   // ---------- dates & status
@@ -954,6 +1251,8 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
     });
     var s = sym(doc.currency);
     $("#sym-disc").setAttribute("data-sym", s); $("#sym-dep").setAttribute("data-sym", s);
+    $("[data-quick='trip']").hidden = !num(book.tripCharge);
+    $("[data-quick='disposal']").hidden = !num(book.disposalFee);
     renderSegs(); renderItems(); renderTpl(); renderPreview(); renderMinWarn(); renderBookList(); updateBar(); applyLock();
   }
   function applyLock() {
@@ -992,44 +1291,86 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
     $("#items").innerHTML = doc.items.map(function (it, i) {
       return '<div class="item">' +
         '<input class="desc" list="bookList" id="it-d-' + i + '" data-i="' + i + '" data-f="desc" value="' + esc(it.desc) + '" placeholder="What you did or supplied" aria-label="Description">' +
-        '<input id="it-q-' + i + '" type="number" step="0.25" min="0" data-i="' + i + '" data-f="qty" value="' + esc(it.qty) + '" aria-label="Quantity">' +
+        '<button type="button" class="x" data-del="' + i + '" aria-label="Remove line">✕</button>' +
+        '<div class="calc">' +
+        '<input id="it-q-' + i + '" type="number" step="0.25" min="0" inputmode="decimal" data-i="' + i + '" data-f="qty" value="' + esc(it.qty) + '" aria-label="Quantity">' +
         '<select id="it-u-' + i + '" data-i="' + i + '" data-f="unit" aria-label="Unit">' + unitOpts(it.unit) + "</select>" +
-        '<input id="it-r-' + i + '" type="number" step="0.01" min="0" data-i="' + i + '" data-f="rate" value="' + esc(it.rate) + '" aria-label="Rate per unit">' +
-        '<span class="amt" id="it-a-' + i + '">' + money(num(it.qty) * num(it.rate), doc.currency) + "</span>" +
-        '<button type="button" class="x" data-del="' + i + '" aria-label="Remove line">✕</button></div>';
+        '<span class="op" aria-hidden="true">×</span>' +
+        '<span class="money-in" data-sym="' + esc(sym(doc.currency)) + '"><input id="it-r-' + i + '" type="number" step="0.01" min="0" inputmode="decimal" data-i="' + i + '" data-f="rate" value="' + esc(it.rate) + '" aria-label="Price per unit"></span>' +
+        '<span class="amt" id="it-a-' + i + '">' + money(num(it.qty) * num(it.rate), doc.currency) + "</span></div></div>";
     }).join("");
+  }
+  var tplQuery = "", tplAnswer = null;
+  function tradeList() {
+    var trades = [];
+    STARTER.forEach(function (t) { if (trades.indexOf(t.trade) < 0) trades.push(t.trade); });
+    var mine = trades.indexOf(book.trade);
+    if (mine > 0) { trades.splice(mine, 1); trades.unshift(book.trade); }
+    if (myTemplates.length) trades.unshift("Mine");
+    return trades;
   }
   function renderTpl() {
     $("#tplBox").hidden = !tplOpen;
     $("#tplShow").hidden = tplOpen;
     if (!tplOpen) return;
-    var trades = [];
-    STARTER.forEach(function (t) { if (trades.indexOf(t.trade) < 0) trades.push(t.trade); });
-    if (myTemplates.length) trades.unshift("Mine");
-    if (!tplTrade || trades.indexOf(tplTrade) < 0) tplTrade = myTemplates.length ? "Mine" : (book.trade || trades[0]);
-    $("#tplTrades").innerHTML = trades.map(function (t) {
-      return '<button type="button" data-trade="' + esc(t) + '" aria-pressed="' + (t === tplTrade) + '">' + (t === "Mine" ? "My templates" : esc(t)) + "</button>";
+    var trades = tradeList();
+    if (!tplTrade || trades.indexOf(tplTrade) < 0) tplTrade = myTemplates.length ? "Mine" : (trades.indexOf(book.trade) > -1 ? book.trade : trades[0]);
+    $("#tplTradeSel").innerHTML = trades.map(function (t) {
+      return '<option value="' + esc(t) + '"' + (t === tplTrade ? " selected" : "") + ">" + (t === "Mine" ? "My templates" : esc(t) + " jobs") + "</option>";
     }).join("");
-    var list = tplTrade === "Mine" ? myTemplates : STARTER.filter(function (t) { return t.trade === tplTrade; });
+    var q = tplQuery.trim(), searching = !!q;
+    $("#tplTradeSel").hidden = searching;
+    if ($("#tplSearch").value !== tplQuery) $("#tplSearch").value = tplQuery;
+    var found = searching ? tplSearch(q) : null;
+    var list = searching ? found.slice(0, found.exact ? 12 : 6) : (tplTrade === "Mine" ? myTemplates : STARTER.filter(function (t) { return t.trade === tplTrade; }));
+    var exact = !searching || found.exact;
     $("#tplCards").innerHTML = list.map(function (t) {
+      var size = t.ask ? " · " + t.ask.def + " " + t.ask.unit + (t.ask.def === 1 || /s$|ft|sq|yd|lb/.test(t.ask.unit) ? "" : "s") : "";
       return '<button type="button" class="tpl-card" data-tpl="' + t.id + '" aria-pressed="' + (t.id === selectedTpl) + '">' +
-        '<span class="nm">' + esc(t.name) + '</span><span class="pr">about ' + money(tplSum(t), doc.currency) + " before tax</span></button>";
+        (searching ? '<span class="tr">' + esc(t.trade || "My template") + "</span>" : "") +
+        '<span class="nm">' + esc(t.name) + '</span><span class="pr">about ' + moneyRound(tplSum(t), doc.currency) + size + "</span></button>";
     }).join("");
-    renderTplPreview();
+    if (!exact) {
+      $("#tplCards").insertAdjacentHTML("afterbegin", '<p class="tpl-empty">No exact match for \u201c' + esc(q) + '\u201d. ' +
+        (list.length ? "Closest jobs are below, or" : "You can") + " make a quick estimate with just the hours and what the materials cost you.</p>");
+      $("#quickEst").hidden = false;
+      if (!$("#qe-name").value || $("#qe-name").dataset.auto) { $("#qe-name").value = q; $("#qe-name").dataset.auto = "1"; }
+    }
+    $("#qeOpen").hidden = !$("#quickEst").hidden;
+    $("#sym-qe").setAttribute("data-sym", sym(doc.currency));
+    renderTplPreview(); renderQuickSum();
   }
   function renderTplPreview() {
     var t = allTemplates().filter(function (x) { return x.id === selectedTpl; })[0];
     var box = $("#tplPreview");
-    if (!t) { box.hidden = true; return; }
+    if (!t) { box.hidden = true; box.innerHTML = ""; return; }
     box.hidden = false;
-    var c = doc.currency;
-    box.innerHTML = tplItems(t).map(function (it) {
-      return '<div class="ln"><span>' + esc(it.desc) + " · " + num(it.qty) + " " + esc(it.unit) + "</span><span>" + money(num(it.qty) * num(it.rate), c) + "</span></div>";
-    }).join("") +
-      '<div class="sum"><span>Estimate before tax</span><span>' + money(tplSum(t), c) + "</span></div>" +
-      '<span class="hint">' + (t.trade ? "Hours and part costs are typical starting points. You can edit every line after adding." : "Your saved template, priced with your current rates.") + "</span>" +
-      '<div class="subrow"><button type="button" class="primary" id="tplUse">' + (hasLines(doc) ? "Add these lines" : "Use this template") + "</button>" +
+    box.innerHTML = (t.ask ? '<label class="tpl-ask" for="tplAsk">' + esc(t.ask.label) +
+        '<input id="tplAsk" type="number" min="0" step="1" inputmode="decimal" value="' + esc(tplSize(t, tplAnswer)) + '"></label>' : "") +
+      '<div id="tplLines"></div>' +
+      '<span class="hint">' + (t.trade ? "Hours and part costs are typical starting points, priced with your rates. You can change any line after adding." : "Your saved template, priced with your current rates.") + "</span>" +
+      '<div class="subrow"><button type="button" class="primary" id="tplUse">' + (hasLines(doc) ? "Add these lines" : "Use this job") + "</button>" +
       (t.trade ? "" : '<button type="button" class="link danger" id="tplDel">Delete template</button>') + "</div>";
+    renderTplLines(t);
+  }
+  function renderTplLines(t) {
+    var c = doc.currency;
+    $("#tplLines").innerHTML = tplItems(t, tplAnswer).map(function (it) {
+      return '<div class="ln"><span>' + esc(it.desc) + " · " + num(it.qty) + " " + esc(it.unit) + "</span><span>" + money(num(it.qty) * num(it.rate), c) + "</span></div>";
+    }).join("") + '<div class="sum"><span>Estimate before tax</span><span>' + money(tplSum(t, tplAnswer), c) + "</span></div>";
+  }
+  function quickItems() {
+    var name = $("#qe-name").value.trim() || "job", hrs = num($("#qe-hours").value), mat = num($("#qe-mat").value), items = [];
+    if (num(book.tripCharge) > 0 && !doc.items.some(function (it) { return /service call|trip/i.test(it.desc); })) items.push({ desc: "Service call", qty: 1, unit: "visit", rate: num(book.tripCharge) });
+    if (hrs > 0) items.push({ desc: "Labor: " + name, qty: hrs, unit: "hr", rate: num(book.laborRate) });
+    if (mat > 0) items.push({ desc: "Materials: " + name, qty: 1, unit: "job", rate: marked(mat) });
+    return { name: name, hrs: hrs, mat: mat, items: items };
+  }
+  function renderQuickSum() {
+    var q = quickItems(), sum = q.items.reduce(function (s, it) { return s + it.qty * it.rate; }, 0);
+    $("#qeSum").textContent = q.hrs || q.mat ? "= " + money(sum, doc.currency) + " before tax (" +
+      (q.hrs ? q.hrs + " hr × " + money(num(book.laborRate), doc.currency) : "") + (q.hrs && q.mat ? ", " : "") +
+      (q.mat ? "materials + " + num(book.markup) + "% markup" : "") + (q.items[0] && q.items[0].desc === "Service call" ? ", service call" : "") + ")" : "";
   }
   function renderMinWarn() {
     var sub = totals(doc).sub, min = num(book.minCharge), w = $("#minWarn");
@@ -1181,6 +1522,7 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
     var has = !!biz.logo;
     $("#logoThumb").hidden = !has; $("#clearLogo").hidden = !has;
     if (has) $("#logoThumb").src = biz.logo;
+    $("#b-currency").value = biz.currency || doc.currency || "USD";
   }
 
   // ---------- changes
@@ -1219,7 +1561,9 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
       document.getElementById("it-a-" + i).textContent = money(num(it.qty) * num(it.rate), doc.currency);
       docChanged();
     } else if (el.hasAttribute("data-biz")) {
-      biz[el.getAttribute("data-biz")] = el.value; persist();
+      biz[el.getAttribute("data-biz")] = el.value;
+      if (el.id === "b-currency") docs.forEach(function (d) { d.currency = el.value; });
+      persist();
     } else if (el.hasAttribute("data-book")) {
       book[el.getAttribute("data-book")] = num(el.value);
       book.items.forEach(function (b, j) { var r = document.getElementById("bk-r-" + j); if (r) r.innerHTML = bookResult(b); });
@@ -1233,8 +1577,21 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
       $("#w-rate").value = TRADE_DEFAULTS[el.value].laborRate;
     }
   }
-  document.addEventListener("input", function (e) { handleField(e.target); });
-  document.addEventListener("change", function (e) { if (e.target.tagName === "SELECT") handleField(e.target); });
+  document.addEventListener("input", function (e) {
+    var el = e.target;
+    if (el.id === "tplTradeSel") { if (tplTrade !== el.value) { tplTrade = el.value; selectedTpl = null; renderTpl(); } return; }
+    if (el.id === "tplSearch") { tplQuery = el.value; selectedTpl = null; renderTpl(); return; }
+    if (el.id === "tplAsk") { tplAnswer = num(el.value); var t = allTemplates().filter(function (x) { return x.id === selectedTpl; })[0]; if (t) renderTplLines(t); return; }
+    if (/^qe-/.test(el.id)) { if (el.id === "qe-name") delete el.dataset.auto; renderQuickSum(); return; }
+    handleField(el);
+  });
+  $("#tplSearch").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") { e.preventDefault(); var first = $("#tplCards .tpl-card"); if (first) first.click(); }
+  });
+  document.addEventListener("change", function (e) {
+    if (e.target.id === "tplTradeSel") { if (tplTrade !== e.target.value) { tplTrade = e.target.value; selectedTpl = null; renderTpl(); } return; }
+    if (e.target.tagName === "SELECT") handleField(e.target);
+  });
   $("#form").addEventListener("submit", function (e) { e.preventDefault(); });
 
   function openDoc(d, toTicket) {
@@ -1246,7 +1603,7 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
   }
   function blank(kind) {
     return { id: uid(), kind: kind, status: "draft", number: nextNumber(kind), date: today(), termsDays: kind === "quote" ? 30 : 14,
-      job: "", currency: doc ? doc.currency : "USD", client: { name: "", contact: "", address: "" },
+      job: "", currency: biz.currency || (doc ? doc.currency : "USD"), client: { name: "", contact: "", address: "" },
       items: [{ desc: "", qty: 1, unit: "hr", rate: 0 }], discount: 0, taxRate: num(book.taxRate), deposit: 0,
       notes: kind === "quote" ? "Price includes labor and materials listed. Changes to scope are quoted separately." : "Thank you for your business.",
       payInfo: kind === "quote" ? "" : (biz.payInfo || "") };
@@ -1292,16 +1649,17 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
       if (last && !last.desc && !num(last.rate)) doc.items.pop();
       doc.items.push(line); renderItems(); docChanged();
       var inp = document.getElementById((q === "labor" ? "it-q-" : "it-r-") + (doc.items.length - 1)); if (inp) inp.focus();
-    } else if (b.hasAttribute("data-trade")) {
-      tplTrade = b.getAttribute("data-trade"); selectedTpl = null; renderTpl();
     } else if (b.hasAttribute("data-tpl")) {
-      selectedTpl = b.getAttribute("data-tpl") === selectedTpl ? null : b.getAttribute("data-tpl"); renderTpl();
+      selectedTpl = b.getAttribute("data-tpl") === selectedTpl ? null : b.getAttribute("data-tpl"); tplAnswer = null; renderTpl();
+      var ask = $("#tplAsk");
+      if (selectedTpl) $("#tplPreview").scrollIntoView({ block: "nearest", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+      if (ask) { ask.focus({ preventScroll: true }); ask.select(); }
     } else if (b.id === "tplUse") {
       var t = allTemplates().filter(function (x) { return x.id === selectedTpl; })[0]; if (!t) return;
-      var items = tplItems(t), replace = !hasLines(doc);
+      var items = tplItems(t, tplAnswer), replace = !hasLines(doc);
       doc.items = replace ? items : doc.items.concat(items);
       if (!doc.job) { doc.job = t.name; $("#f-job").value = t.name; }
-      tplOpen = false; selectedTpl = null;
+      tplOpen = false; selectedTpl = null; tplQuery = ""; tplAnswer = null;
       renderItems(); renderTpl(); docChanged();
       toast(replace ? "Filled in from “" + t.name + "”. Adjust any line." : "Added " + items.length + " lines");
     } else if (b.id === "tplDel") {
@@ -1309,7 +1667,19 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
       myTemplates = myTemplates.filter(function (x) { return x !== gone; });
       selectedTpl = null; renderTpl(); persist(); toast("Deleted template “" + gone.name + "”");
     } else if (b.id === "tplShow") { tplOpen = true; renderTpl(); }
-    else if (b.id === "tplHide") { tplOpen = false; selectedTpl = null; renderTpl(); }
+    else if (b.id === "tplHide") { tplOpen = false; selectedTpl = null; tplQuery = ""; renderTpl(); }
+    else if (b.id === "qeOpen") { $("#quickEst").hidden = false; renderTpl(); $("#qe-name").focus(); }
+    else if (b.id === "qeAdd") {
+      var qe = quickItems();
+      if (!qe.hrs && !qe.mat) { toast("Enter the hours, the materials cost, or both"); $("#qe-hours").focus(); return; }
+      var rep1 = !hasLines(doc);
+      doc.items = rep1 ? qe.items : doc.items.concat(qe.items);
+      if (!doc.job && qe.name !== "job") { doc.job = qe.name; $("#f-job").value = qe.name; }
+      ["#qe-name", "#qe-hours", "#qe-mat"].forEach(function (id) { $(id).value = ""; });
+      $("#quickEst").hidden = true; tplOpen = false; tplQuery = ""; selectedTpl = null;
+      renderItems(); renderTpl(); docChanged();
+      toast("Added " + qe.items.length + " line" + (qe.items.length === 1 ? "" : "s") + ". Adjust anything you need.");
+    }
     else if (b.id === "minFix") {
       var gap = Math.round((num(book.minCharge) - totals(doc).sub) * 100) / 100;
       doc.items.push({ desc: "Minimum service charge", qty: 1, unit: "job", rate: gap });
@@ -1406,7 +1776,7 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
     if (name) biz = { name: name, phone: "", email: "", address: "", license: "", logo: "", payInfo: "" };
     setupDone = true;
     newDoc("quote");
-    toast("You're set up. Pick a template, or add lines yourself.");
+    toast("You're set up. Pick a job below, or add lines yourself.");
   });
   $("#w-skip").addEventListener("click", function () { setupDone = true; $("#welcome").hidden = true; persist(); });
 
