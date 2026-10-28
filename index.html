@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="Make professional quotes and invoices for your trade business in a minute.">
+<meta name="theme-color" content="#2f45c4">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Job Ticket">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script>window.JT_PRINT = true;</script>
 <title>Job Ticket</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -258,6 +266,8 @@ input[type="number"] { font-family: var(--f-mono); font-variant-numeric: tabular
   .mbar .k { font: 500 11px/1 var(--f-mono); text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); display: block; margin-bottom: 3px; }
   .mbar b { font: 500 19px/1 var(--f-mono); font-variant-numeric: tabular-nums; }
   .mbar button { padding: 12px 16px; }
+  .mbar .mbtns { display: flex; gap: 8px; }
+  body.needs-setup .mbar { display: none; }
 }
 
 /* All tickets */
@@ -321,6 +331,44 @@ input[type="number"] { font-family: var(--f-mono); font-variant-numeric: tabular
 .logo-row img { height: 36px; border-radius: 4px; }
 .narrow { max-width: 720px; display: grid; gap: 14px; }
 
+/* + New menu */
+.new-wrap { position: relative; }
+.new-menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 25; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 14px 40px -14px rgb(0 0 0 / 0.35); padding: 6px; display: grid; gap: 4px; width: min(270px, calc(100vw - 32px)); }
+.new-menu button { display: grid; gap: 2px; text-align: left; border: 0; background: none; padding: 11px 12px; border-radius: 8px; line-height: 1.3; }
+.new-menu button:hover, .new-menu button:focus-visible { background: var(--ground); }
+.new-menu strong { font-size: 15px; }
+.new-menu span { font-size: 12.5px; color: var(--muted); }
+@media (max-width: 560px) {
+  .brand span { display: none; } .brand h1 { font-size: 23px; }
+  .bar { flex-wrap: nowrap; } .bar-actions { flex-wrap: nowrap; }
+  .plan-chip .long { display: none; }
+}
+@media (min-width: 561px) { .plan-chip .short { display: none; } }
+/* Ticket header: what it is, its status, and the details tucked away */
+.tk-head { gap: 8px; }
+.tk-top { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; }
+.tk-title { font-family: var(--f-display); font-weight: 800; font-size: 22px; letter-spacing: -0.01em; line-height: 1.1; }
+.tk-no { font-family: var(--f-mono); font-weight: 500; font-size: 14.5px; color: var(--muted); margin-left: 8px; letter-spacing: 0; }
+.tk-meta { display: flex; flex-wrap: wrap; gap: 2px 10px; align-items: baseline; font-size: 13.5px; color: var(--muted); }
+.tk-details { display: grid; gap: 10px; padding-top: 10px; border-top: 1px dashed var(--line); }
+.tk-details .seg { justify-self: start; }
+.seg.small button { padding: 5px 10px; font-size: 13px; }
+.items-empty { margin: 0; font-size: 13.5px; color: var(--muted); }
+/* Send sheet: bottom sheet on phones, dialog on desktop */
+.overlay.sheet-wrap { place-items: end center; padding: 0; }
+.sheet { background: var(--panel); color: var(--ink); width: 100%; max-width: 480px; max-height: 100%; overflow: auto; border-radius: 16px 16px 0 0;
+  padding: 18px max(16px, env(safe-area-inset-right, 0px)) calc(14px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); display: grid; gap: 8px; box-shadow: 0 -10px 40px -10px rgb(0 0 0 / 0.4); }
+@media (min-width: 921px) { .overlay.sheet-wrap { place-items: center; padding: 16px; } .sheet { border-radius: 14px; padding: 20px; } }
+.sheet h3 { font-family: var(--f-display); font-weight: 800; font-size: 21px; margin: 0; }
+.sheet > p { margin: 0 0 4px; color: var(--muted); font-size: 14px; }
+.sheet .link { justify-self: center; margin-top: 2px; }
+.send-opt { display: grid; gap: 3px; text-align: left; padding: 14px 15px; border-radius: 10px; line-height: 1.3; }
+.send-opt strong { font-size: 15.5px; }
+.send-opt span { font-size: 13px; color: var(--muted); }
+.send-opt.primary span { color: var(--on-carbon); opacity: 0.85; }
+.install { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; padding: 12px 14px; border-radius: 12px; background: var(--carbon-soft); }
+.install strong { display: block; }
+.install span { font-size: 13.5px; color: var(--muted); }
 /* Plan & upgrade */
 .plan-chip { font-size: 13px; border-radius: 99px; padding: 8px 12px; background: var(--carbon-soft); border-color: transparent; }
 .plan-chip.out { background: transparent; border-color: var(--danger); color: var(--danger); }
@@ -354,7 +402,7 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
 
 @media print {
   body { background: #fff; padding: 0; }
-  .bar, .tabs, .form, .preview-tools, .toast, .mbar, .welcome, .example-note { display: none !important; }
+  .bar, .tabs, .form, .preview-tools, .toast, .mbar, .welcome, .example-note, .install { display: none !important; }
   .main { display: block; }
   .main .preview { display: block !important; position: static; }
   .ticket { box-shadow: none; }
@@ -374,8 +422,13 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
     <div class="brand"><h1>Job Ticket</h1><span>Quotes &amp; invoices for the trades</span></div>
     <div class="bar-actions">
       <button id="planChip" type="button" class="plan-chip" hidden></button>
-      <button id="newQuote" type="button">+ New quote</button>
-      <button id="newInvoice" type="button" class="primary">+ New invoice</button>
+      <div class="new-wrap">
+        <button id="newBtn" type="button" class="primary" aria-haspopup="true" aria-expanded="false" aria-controls="newMenu">+ New</button>
+        <div class="new-menu" id="newMenu" hidden>
+          <button id="newQuote" type="button"><strong>Quote</strong><span>A price before the job. Always free.</span></button>
+          <button id="newInvoice" type="button"><strong>Invoice</strong><span>A bill for work you've done.</span></button>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -410,55 +463,48 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
       </div>
     </div>
 
+    <div class="install" id="installTip" hidden>
+      <div><strong>Put Job Ticket on your home screen</strong><span id="installHow">It opens like an app and works without signal.</span></div>
+      <div class="subrow"><button type="button" id="installBtn" class="primary" hidden>Install</button><button type="button" id="installNo" class="link">Not now</button></div>
+    </div>
+
     <div class="main" id="main">
       <form class="form" id="form" autocomplete="off">
         <div class="lockbar keep" id="lockBar" hidden>
           <div><strong>Paid invoice · locked</strong><span>On the free plan, paid invoices can't be changed. Repeat this job as a new invoice, or upgrade to edit paid invoices anytime.</span></div>
           <div class="subrow"><button type="button" id="lockRepeat" class="primary">Repeat this job</button><button type="button" id="lockUpgrade">Upgrade to edit</button></div>
         </div>
-        <div class="panel">
-          <div class="row-top">
-            <div class="seg" role="group" aria-label="Document type">
-              <button type="button" data-kind="quote">Quote</button>
-              <button type="button" data-kind="invoice">Invoice</button>
-            </div>
-            <div class="seg" role="group" aria-label="Status">
+        <div class="panel tk-head">
+          <div class="tk-top">
+            <div class="tk-title"><span id="tkKind">Invoice</span><span class="tk-no" id="tkNo"></span></div>
+            <div class="seg small" role="group" aria-label="Status">
               <button type="button" data-status="draft">Draft</button>
               <button type="button" data-status="sent">Sent</button>
               <button type="button" data-status="paid" id="stPaid">Paid</button>
             </div>
           </div>
+          <div class="tk-meta"><span id="tkMeta"></span><button type="button" class="link keep" id="tkEdit" aria-expanded="false" aria-controls="tkDetails">Edit date &amp; terms</button></div>
           <div id="paidConfirm" class="confirm-note" hidden>
             <span>Mark this invoice as paid? On the free plan, paid invoices are locked so they can't be changed or reused. You can still view, copy and print them.</span>
             <div class="subrow"><button type="button" id="paidYes" class="primary">Mark as paid</button><button type="button" id="paidNo">Cancel</button></div>
           </div>
-          <div class="grid3">
-            <label>Number<input id="f-number" data-path="number"></label>
-            <label>Date<input id="f-date" type="date" data-path="date"></label>
-            <label><span id="termsLabel">Payment terms</span>
-              <select id="f-terms" data-path="termsDays" data-num>
-                <option value="0">Due on receipt</option>
-                <option value="7">Net 7</option>
-                <option value="14">Net 14</option>
-                <option value="30">Net 30</option>
-              </select>
-            </label>
-          </div>
-        </div>
-
-        <div class="panel">
-          <p class="panel-title">Customer</p>
-          <div class="grid2">
-            <label>Name<input id="f-cname" data-path="client.name" placeholder="Who is this for?"></label>
-            <label>Phone or email<input id="f-ccontact" data-path="client.contact"></label>
-          </div>
-          <div class="grid2">
-            <label>Job address<textarea id="f-caddr" data-path="client.address" rows="2"></textarea></label>
-            <label>Job description<textarea id="f-job" data-path="job" rows="2" placeholder="e.g. Kitchen sink replacement"></textarea></label>
-          </div>
-          <div class="cust-lock" id="custLock" hidden>
-            <span id="custLockMsg"></span>
-            <button type="button" class="link keep" id="custNew">Start a new invoice</button>
+          <div class="tk-details" id="tkDetails" hidden>
+            <div class="seg" role="group" aria-label="Document type">
+              <button type="button" data-kind="quote">Quote</button>
+              <button type="button" data-kind="invoice">Invoice</button>
+            </div>
+            <div class="grid3">
+              <label>Number<input id="f-number" data-path="number"></label>
+              <label>Date<input id="f-date" type="date" data-path="date"></label>
+              <label><span id="termsLabel">Payment terms</span>
+                <select id="f-terms" data-path="termsDays" data-num>
+                  <option value="0">Due on receipt</option>
+                  <option value="7">Net 7</option>
+                  <option value="14">Net 14</option>
+                  <option value="30">Net 30</option>
+                </select>
+              </label>
+            </div>
           </div>
         </div>
 
@@ -490,7 +536,7 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
             <button type="button" data-quick="labor">+ Labor hour</button>
             <button type="button" data-quick="trip">+ Service call</button>
             <button type="button" data-quick="disposal">+ Disposal</button>
-            <button type="button" id="tplShow" class="ghost">+ From a template</button>
+            <button type="button" id="tplShow" class="ghost">+ Pick a job</button>
           </div>
           <div id="minWarn" class="warn" hidden></div>
           <div class="grid3">
@@ -505,6 +551,22 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
             <input id="tplName" placeholder="Template name, e.g. Tankless heater install" aria-label="Template name">
             <button type="button" id="tplSaveYes" class="primary">Save template</button>
             <button type="button" id="tplSaveNo">Cancel</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <p class="panel-title">Customer</p>
+          <div class="grid2">
+            <label>Name<input id="f-cname" data-path="client.name" placeholder="Who is this for?"></label>
+            <label>Phone or email<input id="f-ccontact" data-path="client.contact"></label>
+          </div>
+          <div class="grid2">
+            <label>Job address<textarea id="f-caddr" data-path="client.address" rows="2"></textarea></label>
+            <label>Job description<textarea id="f-job" data-path="job" rows="2" placeholder="e.g. Kitchen sink replacement"></textarea></label>
+          </div>
+          <div class="cust-lock" id="custLock" hidden>
+            <span id="custLockMsg"></span>
+            <button type="button" class="link keep" id="custNew">Start a new invoice</button>
           </div>
         </div>
 
@@ -538,7 +600,7 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
           <span class="save-state" id="saveState">Saved on this device</span>
         </div>
         <span class="hint" id="hostedNote" hidden>Download PDF and Print appear on your live site. This preview can't print or download files.</span>
-        <span class="example-note" id="exampleNote">This is an example ticket. Edit it, or start your own with + New invoice.</span>
+        <span class="example-note" id="exampleNote">This is an example ticket. Edit it, or start your own with + New.</span>
         <div class="ticket" id="ticket"></div>
         <div id="copyWrap" hidden>
           <label>Your browser blocked copying. Select this text and copy it:
@@ -626,7 +688,21 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
 
 <div class="mbar" id="mbar">
   <div><span class="k" id="mLabel">Total</span><b id="mTotal">$0.00</b></div>
-  <button type="button" id="mToggle" class="primary">Preview ticket</button>
+  <div class="mbtns">
+    <button type="button" id="mToggle">Preview</button>
+    <button type="button" id="mSend" class="primary">Send</button>
+  </div>
+</div>
+<div class="overlay sheet-wrap" id="sendSheet" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sendTitle">
+    <h3 id="sendTitle">Send</h3>
+    <p id="sendTo"></p>
+    <button type="button" class="send-opt primary" id="sendPdf" hidden><strong id="sendPdfLabel">Share PDF</strong><span>Text or email it as a PDF</span></button>
+    <button type="button" class="send-opt" id="sendCopy"><strong>Copy as text</strong><span>Paste it into a text message or email</span></button>
+    <button type="button" class="send-opt" id="sendPrint" hidden><strong>Print</strong><span>Or save it from the print screen</span></button>
+    <p class="hint" id="sendNote" hidden></p>
+    <button type="button" class="link" id="sendClose">Cancel</button>
+  </div>
 </div>
 <div class="overlay" id="paywall" hidden>
   <div class="paywall" role="dialog" aria-modal="true" aria-labelledby="pwTitle">
@@ -1144,6 +1220,7 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
   function isCustLocked(d) { return d.kind === "invoice" && !!d.sentLock && !isPro(); }
   var CUST_FIELDS = "#f-cname, #f-ccontact, #f-caddr";
   function markSent() {
+    setTimeout(renderInstallTip, 2800);
     // Copying or printing is how a ticket goes out, so a draft becomes Sent.
     if (doc.status === "draft") { doc.status = "sent"; renderSegs(); docChanged(); }
     if (doc.kind !== "invoice" || isPro() || doc.sentLock) return false;
@@ -1169,7 +1246,10 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
     if (isPro()) return;
     var left = freeLeft();
     c.classList.toggle("out", !left);
-    c.textContent = left ? left + " of " + FREE_INVOICES + " free invoices left" : "Free invoices used · Upgrade";
+    c.innerHTML = left
+      ? '<span class="long">' + left + " of " + FREE_INVOICES + ' free invoices left</span><span class="short">' + left + " free left</span>"
+      : '<span class="long">Free invoices used · Upgrade</span><span class="short">Upgrade</span>';
+    c.setAttribute("aria-label", left ? left + " of " + FREE_INVOICES + " free invoices left. Upgrade" : "Free invoices used. Upgrade");
   }
   function openPaywall(atLimit) {
     $("#pwTitle").textContent = atLimit ? "You've used your " + FREE_INVOICES + " free invoices" : "Upgrade to unlimited invoices";
@@ -1245,6 +1325,9 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
 
   function renderTicketView() {
     $("#welcome").hidden = setupDone;
+    $("#main").hidden = !setupDone;
+    document.body.classList.toggle("needs-setup", !setupDone);
+    renderInstallTip();
     $$("#form [data-path]").forEach(function (el) {
       var v = getPath(doc, el.getAttribute("data-path"));
       el.value = v == null ? "" : v;
@@ -1280,6 +1363,14 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
     $("#stPaid").textContent = q ? "Accepted" : "Paid";
     $("#convertBtn").hidden = !q;
     $("#dupBtn").textContent = !q && doc.status === "paid" ? "Repeat this job" : "Duplicate";
+    renderHead();
+  }
+  function renderHead() {
+    var q = doc.kind === "quote";
+    $("#tkKind").textContent = q ? "Quote" : "Invoice";
+    $("#tkNo").textContent = doc.number || "";
+    var due = num(doc.termsDays) ? (q ? "Good until " : "Due ") + fmtDate(dueDate(doc), true) : (q ? "Good today only" : "Due on receipt");
+    $("#tkMeta").textContent = fmtDate(doc.date, true) + " · " + due;
   }
   var UNITS = ["hr", "ea", "day", "sq ft", "ft", "gal", "cu yd", "visit", "job"];
   function unitOpts(cur) {
@@ -1298,7 +1389,7 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
         '<span class="op" aria-hidden="true">×</span>' +
         '<span class="money-in" data-sym="' + esc(sym(doc.currency)) + '"><input id="it-r-' + i + '" type="number" step="0.01" min="0" inputmode="decimal" data-i="' + i + '" data-f="rate" value="' + esc(it.rate) + '" aria-label="Price per unit"></span>' +
         '<span class="amt" id="it-a-' + i + '">' + money(num(it.qty) * num(it.rate), doc.currency) + "</span></div></div>";
-    }).join("");
+    }).join("") || '<p class="items-empty">No lines yet. ' + (tplOpen ? "Pick a job above, or add a line." : "Pick a job or add a line.") + "</p>";
   }
   var tplQuery = "", tplAnswer = null;
   function tradeList() {
@@ -1540,7 +1631,7 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
       doc.example = false; exampleSnap = null;
       if (doc.kind === "invoice") toast("The example is now your own invoice" + freeNote());
     }
-    persist(); renderPreview(); renderMinWarn(); updateBar(); renderBadge();
+    persist(); renderPreview(); renderMinWarn(); updateBar(); renderBadge(); renderHead();
   }
   function handleField(el) {
     if (isLocked(doc) && el.closest("#form") && !el.closest(".keep")) return;
@@ -1597,18 +1688,20 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
   function openDoc(d, toTicket) {
     doc = d; tplOpen = !hasLines(d); selectedTpl = null; snapExample();
     $("#confirmDel").hidden = true; $("#tplSaveRow").hidden = true;
-    $("#main").classList.remove("show-preview"); $("#mToggle").textContent = "Preview ticket";
+    $("#main").classList.remove("show-preview"); $("#mToggle").textContent = "Preview";
+    $("#tkDetails").hidden = true; $("#tkEdit").setAttribute("aria-expanded", "false"); $("#tkEdit").textContent = "Edit date & terms";
     persist();
     if (toTicket || view === "ticket") showView("ticket"); else renderTicketView();
   }
   function blank(kind) {
     return { id: uid(), kind: kind, status: "draft", number: nextNumber(kind), date: today(), termsDays: kind === "quote" ? 30 : 14,
       job: "", currency: biz.currency || (doc ? doc.currency : "USD"), client: { name: "", contact: "", address: "" },
-      items: [{ desc: "", qty: 1, unit: "hr", rate: 0 }], discount: 0, taxRate: num(book.taxRate), deposit: 0,
+      items: [], discount: 0, taxRate: num(book.taxRate), deposit: 0,
       notes: kind === "quote" ? "Price includes labor and materials listed. Changes to scope are quoted separately." : "Thank you for your business.",
       payInfo: kind === "quote" ? "" : (biz.payInfo || "") };
   }
   function newDoc(kind) {
+    closeNewMenu();
     if (kind === "invoice" && !canMakeInvoice()) { openPaywall(true); return; }
     var d = blank(kind); if (kind === "invoice") claimInvoice(d); docs.push(d); openDoc(d, true); toast(kind === "quote" ? "New quote " + d.number : "New invoice " + d.number + freeNote()); }
 
@@ -1703,9 +1796,78 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
   });
   $("#mToggle").addEventListener("click", function () {
     var on = $("#main").classList.toggle("show-preview");
-    $("#mToggle").textContent = on ? "Back to editing" : "Preview ticket";
+    $("#mToggle").textContent = on ? "Edit" : "Preview";
     window.scrollTo(0, 0);
   });
+
+  // + New menu
+  function closeNewMenu() { $("#newMenu").hidden = true; $("#newBtn").setAttribute("aria-expanded", "false"); }
+  $("#newBtn").addEventListener("click", function (e) {
+    e.stopPropagation();
+    var open = $("#newMenu").hidden;
+    $("#newMenu").hidden = !open; $("#newBtn").setAttribute("aria-expanded", String(open));
+    if (open) $("#newInvoice").focus();
+  });
+  document.addEventListener("click", function (e) { if (!$("#newMenu").hidden && !e.target.closest(".new-wrap")) closeNewMenu(); });
+  $("#tkEdit").addEventListener("click", function () {
+    var open = $("#tkDetails").hidden;
+    $("#tkDetails").hidden = !open; this.setAttribute("aria-expanded", String(open));
+    this.textContent = open ? "Done" : "Edit date & terms";
+  });
+
+  // Send: one place for PDF, text and print
+  function openSend() {
+    var t = totals(doc), q = doc.kind === "quote", phone = window.matchMedia && matchMedia("(pointer: coarse)").matches;
+    var owed = !q && doc.status !== "paid" && t.dep ? t.balance : t.total;
+    $("#sendTitle").textContent = "Send " + (q ? "quote " : "invoice ") + doc.number;
+    $("#sendTo").textContent = (doc.client.name ? "To " + doc.client.name + " · " : "") + money(owed, doc.currency) + (q ? " quote" : doc.status === "paid" ? " paid" : " due");
+    $("#sendPdf").hidden = !window.JT_PRINT; $("#sendPrint").hidden = !window.JT_PRINT;
+    $("#sendPdfLabel").textContent = phone ? "Share PDF" : "Download PDF";
+    var note = "";
+    if (!doc.client.name) note = "Tip: add the customer's name first so it shows on the " + (q ? "quote." : "invoice.");
+    if (!q && !isPro() && !doc.sentLock) note += (note ? " " : "") + "On the free plan, sending locks the customer on this invoice.";
+    if (!window.JT_PRINT) note += (note ? " " : "") + "PDF and Print are on your live site; this preview can only copy.";
+    $("#sendNote").textContent = note; $("#sendNote").hidden = !note;
+    $("#sendSheet").hidden = false;
+    ($("#sendPdf").hidden ? $("#sendCopy") : $("#sendPdf")).focus();
+  }
+  function closeSend() { $("#sendSheet").hidden = true; }
+  $("#mSend").addEventListener("click", openSend);
+  $("#sendClose").addEventListener("click", closeSend);
+  $("#sendSheet").addEventListener("click", function (e) { if (e.target.id === "sendSheet") closeSend(); });
+  $("#sendPdf").addEventListener("click", function () { closeSend(); $("#pdfBtn").click(); });
+  $("#sendCopy").addEventListener("click", function () { closeSend(); $("#copyText").click(); });
+  $("#sendPrint").addEventListener("click", function () { closeSend(); $("#printBtn").click(); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Escape") return;
+    if (!$("#sendSheet").hidden) closeSend();
+    if (!$("#newMenu").hidden) { closeNewMenu(); $("#newBtn").focus(); }
+  });
+
+  // Home-screen install tip, shown once something has been sent
+  var KEY_INSTALL = "jobticket.installtip.v1", installPrompt = null;
+  window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); installPrompt = e; renderInstallTip(); });
+  function isStandalone() { return (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true; }
+  function isIOS() { return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1); }
+  function renderInstallTip() {
+    var sentSomething = docs.some(function (d) { return !d.example && (d.status === "sent" || d.status === "paid"); });
+    var can = !!installPrompt || isIOS();
+    var show = !!window.JT_PRINT && setupDone && sentSomething && can && !isStandalone() && !load(KEY_INSTALL, false);
+    $("#installTip").hidden = !show;
+    if (!show) return;
+    $("#installBtn").hidden = !installPrompt;
+    $("#installHow").textContent = installPrompt ? "It opens like an app and works without signal."
+      : "Tap the Share button, then \u201cAdd to Home Screen.\u201d It opens like an app and works without signal.";
+  }
+  $("#installBtn").addEventListener("click", function () {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    installPrompt.userChoice.then(function () { installPrompt = null; save(KEY_INSTALL, true); renderInstallTip(); });
+  });
+  $("#installNo").addEventListener("click", function () { save(KEY_INSTALL, true); renderInstallTip(); });
+  if (window.JT_PRINT && "serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+    navigator.serviceWorker.register("sw.js").catch(function () {});
+  }
 
   $("#tplSaveOpen").addEventListener("click", function () {
     if (!hasLines(doc)) { toast("Add some lines first, then save them as a template"); return; }
@@ -1778,7 +1940,7 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
     newDoc("quote");
     toast("You're set up. Pick a job below, or add lines yourself.");
   });
-  $("#w-skip").addEventListener("click", function () { setupDone = true; $("#welcome").hidden = true; persist(); });
+  $("#w-skip").addEventListener("click", function () { setupDone = true; persist(); renderTicketView(); });
 
   // Logo
   $("#b-logo").addEventListener("change", function (e) {
@@ -1821,7 +1983,9 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
   $("#copyText").addEventListener("click", function () {
     var txt = asText(), first = markSent();
     var done = first ? "Copied. The customer on this invoice is now locked (free plan)." : "Copied. Paste it into a text or email.";
-    function fallback() { $("#copyWrap").hidden = false; var box = $("#copyBox"); box.value = txt; box.focus(); box.select(); }
+    function fallback() {
+      $("#main").classList.add("show-preview"); $("#mToggle").textContent = "Edit";
+      $("#copyWrap").hidden = false; var box = $("#copyBox"); box.value = txt; box.focus(); box.select(); }
     try {
       navigator.clipboard.writeText(txt).then(function () { $("#copyWrap").hidden = true; toast(done); }, fallback);
     } catch (e) { fallback(); }

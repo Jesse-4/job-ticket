@@ -5,18 +5,19 @@ A single-file web app for plumbers, electricians, handymen, cleaners, landscaper
 **Files**
 - `index.html` is the full app. Host this one. It has **Download PDF** (a share sheet on phones) and **Print** buttons. Printed and downloaded tickets never show the Draft, Sent or Overdue stamp; only PAID appears.
 - `lib/html2pdf.bundle.min.js` makes the PDFs (html2pdf.js 0.10.1, MIT license).
-- `app.html` is the same app formatted for the Claude artifact preview.
+- `app.html` is the source of the app (also used for the Claude preview). After editing it, run `python3 tools/build.py` to rebuild `index.html`.
+- `manifest.webmanifest`, `sw.js` and `icons/` let people add Job Ticket to their phone's home screen, where it opens full screen like an app and keeps working without signal.
 
 Nothing else is needed: no server and no database. Each customer's data stays in their own browser.
 
 ## What it does
 The app has four tabs:
-- **Ticket:** write a quote or invoice. Pick from about 70 common jobs across 10 trades (search by name, or browse your trade). Size-based jobs ask one question, like square feet or number of rooms, and scale the materials and hours. Jobs that aren't listed get a quick estimate from just the hours and materials cost. Everything is priced from your own rates. Each line reads "qty × price = amount". The ticket preview updates as you type. On phones, a bar at the bottom shows the total and switches between editing and preview.
+- **Ticket:** write a quote or invoice. The top shows what it is, its status and its date in one line ("Edit date & terms" opens the rest). The job picker comes first: pick from about 70 common jobs across 10 trades (search by name, or browse your trade). Size-based jobs ask one question, like square feet or number of rooms, and scale the materials and hours. Jobs that aren't listed get a quick estimate from just the hours and materials cost. Everything is priced from your own rates. Each line reads "qty × price = amount". The ticket preview updates as you type. On phones, a bar at the bottom shows the total, a **Preview** button and a **Send** button that offers Share PDF, Copy as text and Print in one place. After someone sends their first ticket, the app suggests adding it to their home screen.
 - **All tickets:** shows how much you're owed, what's overdue, open quotes and money collected, with filters. Overdue invoices are flagged automatically.
 - **My rates:** the price book. Hourly rate, markup on parts, service call fee, disposal fee, minimum job charge and sales tax, each with a plain explanation and a live worked example. Saved parts and services fill in automatically on tickets.
 - **Business:** name, contact, license, logo and default payment instructions.
 
-New users get a 30-second setup (trade, hourly rate, business name) that fills in typical rates for their trade.
+New users see only a 30-second setup (trade, hourly rate, business name) that fills in typical rates for their trade, then go straight to their first quote. One **+ New** button makes a quote or an invoice.
 
 ## Free plan and upgrades
 - Everyone gets **3 free invoices**. Quotes are always free.
