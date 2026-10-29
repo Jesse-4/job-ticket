@@ -1409,7 +1409,8 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
     $("#tplTradeSel").innerHTML = trades.map(function (t) {
       return '<option value="' + esc(t) + '"' + (t === tplTrade ? " selected" : "") + ">" + (t === "Mine" ? "My templates" : esc(t) + " jobs") + "</option>";
     }).join("");
-    var q = tplQuery.trim(), searching = !!q;
+    // One letter is too little to search on; keep showing the trade's jobs until there are two.
+    var q = tplQuery.trim(), searching = q.replace(/[^a-z0-9]/gi, "").length >= 2;
     $("#tplTradeSel").hidden = searching;
     if ($("#tplSearch").value !== tplQuery) $("#tplSearch").value = tplQuery;
     var found = searching ? tplSearch(q) : null;
@@ -1424,8 +1425,15 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
     if (!exact) {
       $("#tplCards").insertAdjacentHTML("afterbegin", '<p class="tpl-empty">No exact match for \u201c' + esc(q) + '\u201d. ' +
         (list.length ? "Closest jobs are below, or" : "You can") + " make a quick estimate with just the hours and what the materials cost you.</p>");
-      $("#quickEst").hidden = false;
+      if ($("#quickEst").hidden) { $("#quickEst").hidden = false; $("#quickEst").dataset.auto = "1"; }
       if (!$("#qe-name").value || $("#qe-name").dataset.auto) { $("#qe-name").value = q; $("#qe-name").dataset.auto = "1"; }
+    } else if ($("#quickEst").dataset.auto) {
+      // Real matches again: put away the quick estimate this search opened, unless they started filling it in.
+      if (!$("#qe-hours").value && !$("#qe-mat").value) {
+        $("#quickEst").hidden = true;
+        if ($("#qe-name").dataset.auto) { $("#qe-name").value = ""; delete $("#qe-name").dataset.auto; }
+      }
+      delete $("#quickEst").dataset.auto;
     }
     $("#qeOpen").hidden = !$("#quickEst").hidden;
     $("#sym-qe").setAttribute("data-sym", sym(doc.currency));
@@ -1561,7 +1569,9 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
       .sort(function (a, b) { return String(b.date).localeCompare(String(a.date)) || String(b.number).localeCompare(String(a.number)); });
     $("#list").innerHTML = list.map(function (d) {
       var t = totals(d), st = statusOf(d);
-      var when = d.kind === "quote" ? "Sent " + fmtDate(d.date, true) : (st === "paid" ? "Paid" : (st === "draft" ? "Not sent yet" : "Due " + fmtDate(dueDate(d), true)));
+      var when = st === "draft" ? "Not sent yet"
+        : d.kind === "quote" ? (st === "paid" ? "Accepted" : "Sent " + fmtDate(d.date, true))
+        : st === "paid" ? "Paid" : "Due " + fmtDate(dueDate(d), true);
       var amt = d.kind === "invoice" && st !== "paid" && st !== "draft" ? t.balance : t.total;
       return '<button type="button" class="lrow' + (d.example ? " ex" : "") + '" data-open="' + d.id + '">' +
         '<span class="num">' + esc(d.number) + '</span>' +
@@ -1761,7 +1771,7 @@ a.btn.primary { background: var(--carbon); color: var(--on-carbon); border-color
       selectedTpl = null; renderTpl(); persist(); toast("Deleted template “" + gone.name + "”");
     } else if (b.id === "tplShow") { tplOpen = true; renderTpl(); }
     else if (b.id === "tplHide") { tplOpen = false; selectedTpl = null; tplQuery = ""; renderTpl(); }
-    else if (b.id === "qeOpen") { $("#quickEst").hidden = false; renderTpl(); $("#qe-name").focus(); }
+    else if (b.id === "qeOpen") { $("#quickEst").hidden = false; delete $("#quickEst").dataset.auto; renderTpl(); $("#qe-name").focus(); }
     else if (b.id === "qeAdd") {
       var qe = quickItems();
       if (!qe.hrs && !qe.mat) { toast("Enter the hours, the materials cost, or both"); $("#qe-hours").focus(); return; }
