@@ -32,7 +32,7 @@ const { Video, endCard } = require("../engine");
   await v.cap("s2", ["Search the job"], { y: 326, size: "m", style: "white" });
   await v.scrollTo("#tplBox", 0.5, 70);
   await v.tap("#tplSearch", { pre: 0.25, post: 0.1 });
-  await v.type("#tplSearch", "water heater", { cps: 10, byWord: true });
+  await v.type("#tplSearch", "water heater", { cps: 10 });
   await v.blur();
   await v.wait(0.25);
   await v.snap("search");

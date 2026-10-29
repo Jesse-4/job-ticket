@@ -30,7 +30,7 @@ const { Video, endCard } = require("../engine");
   await v.cam({ s: 1.95, fx: 195, fy: 300, px: 489, py: 1000 }, 0.4);
   await v.scrollTo("#tplBox", 0.4, 70);
   await v.tap("#tplSearch", { pre: 0.2, post: 0.05 });
-  await v.type("#tplSearch", "driveway", { cps: 11, byWord: true });
+  await v.type("#tplSearch", "driveway", { cps: 11 });
   await v.blur();
   const card = await v.mark(".tpl-card", "Driveway washing");
   await v.tap(card, { pre: 0.25, post: 0.2 });

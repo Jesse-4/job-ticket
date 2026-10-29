@@ -26,7 +26,7 @@ const FULL = { s: 1080 / 390, fx: 0, fy: 0, px: 0, py: 0, frame: 0, op: 1 };
 
   await v.cap("c2", ["Search the job"], { y: 300, size: "m", style: "cream" });
   await v.tap("#tplSearch", { pre: 0.25, post: 0.1 });
-  await v.type("#tplSearch", "deep clean", { cps: 10, byWord: true });
+  await v.type("#tplSearch", "deep clean", { cps: 10 });
   await v.blur();
   await v.wait(0.2);
   const card = await v.mark(".tpl-card", "Deep clean");

@@ -21,7 +21,7 @@ const CHECKS = ["Works with no signal", "Lives on your home screen", "Data stays
   await v.cam({ s: 1.95, fx: 195, fy: 300, px: 489, py: 1000 }, 0.5, "inout", "whoosh");
   await v.scrollTo("#tplBox", 0.4, 70);
   await v.tap("#tplSearch", { pre: 0.2, post: 0.05 });
-  await v.type("#tplSearch", "tune up", { cps: 11, byWord: true });
+  await v.type("#tplSearch", "tune up", { cps: 11 });
   await v.blur();
   const card = await v.mark(".tpl-card", "AC tune-up");
   await v.tap(card, { pre: 0.25, post: 0.2 });

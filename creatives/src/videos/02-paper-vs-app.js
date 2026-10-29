@@ -46,7 +46,7 @@ const pdfCard = (png, name) => `<div class="pdfcard"><div class="bar"><span clas
   await v.scrollTo("#tplBox", 0, 70);
   await v.wait(0.7);
   await v.tap("#tplSearch", { pre: 0.25, post: 0.1 });
-  await v.type("#tplSearch", "outlets", { cps: 10, byWord: true });
+  await v.type("#tplSearch", "outlets", { cps: 10 });
   await v.blur();
   await v.wait(0.3);
   const card = await v.mark(".tpl-card", "Replace outlets or switches");

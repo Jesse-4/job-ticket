@@ -55,7 +55,7 @@ async function endPoint(v, n) { await v.end("n" + n); await v.end("p" + n); awai
   await v.tap("#tab-ticket", { post: 0.1 });
   await v.scrollTo("#tplBox", 0, 260);
   await v.tap("#tplSearch", { pre: 0.2, post: 0.1 });
-  await v.type("#tplSearch", "deck stain", { cps: 11, byWord: true });
+  await v.type("#tplSearch", "deck stain", { cps: 11 });
   await v.blur();
   const card = await v.mark(".tpl-card", "Deck stain");
   await v.tap(card, { pre: 0.25, post: 0.2 });
