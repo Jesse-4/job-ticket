@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080">
+<title>Job Ticket stage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Instrument+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Caveat:wght@500;700&display=swap">
+<style>
+:root {
+  --ink: #161a2b; --carbon: #2f45c4; --carbon-lt: #8d9cff; --cream: #fffdf2; --line: #e6e1c8;
+  --paid: #1d7a4b; --danger: #b42318; --muted: #5b6277;
+  --f-display: "Bricolage Grotesque", sans-serif; --f-body: "Instrument Sans", sans-serif; --f-mono: "DM Mono", monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; background: var(--cream); }
+#stage { position: relative; width: 1080px; height: 1920px; overflow: hidden; font-family: var(--f-body); color: var(--ink); }
+
+/* Backgrounds */
+#bg { position: absolute; inset: 0; }
+.bg-paper { background: var(--cream); background-image: repeating-linear-gradient(to bottom, transparent 0 63px, rgba(47,69,196,.07) 63px 65px); }
+.bg-paper::before { content: ""; position: absolute; top: 46px; left: 0; right: 0; height: 18px;
+  background: radial-gradient(circle at 9px 9px, rgba(47,69,196,.28) 7px, transparent 8px) 0 0/54px 18px repeat-x; }
+.bg-carbon { background: radial-gradient(120% 70% at 30% 10%, #3c54d6 0%, #2f45c4 45%, #24369e 100%); }
+.bg-ink { background: radial-gradient(110% 70% at 30% 0%, #232944 0%, #161a2b 55%, #0e111d 100%); }
+
+/* Phone */
+#phone { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: auto; }
+#bezel { position: absolute; left: -15px; top: -15px; right: -15px; bottom: -15px; border-radius: 62px;
+  background: #0b0d14; box-shadow: 0 0 0 2px #2a2f42 inset, 0 40px 90px rgba(10,14,40,.35), 0 12px 30px rgba(10,14,40,.25); }
+#screen { position: relative; overflow: hidden; border-radius: 48px; background: #eceef4; }
+#app { display: block; border: 0; position: absolute; left: 0; top: 46px; }
+#status { position: absolute; left: 0; right: 0; top: 0; height: 46px; background: #eceef4; display: flex; justify-content: space-between; align-items: center; padding: 4px 30px 0 34px; font: 600 15px/1 var(--f-body); color: #161a2b; }
+#status .icons { display: flex; gap: 6px; align-items: center; }
+#status .sig { display: flex; gap: 2px; align-items: flex-end; height: 11px; }
+#status .sig b { width: 3px; background: #161a2b; border-radius: 1px; }
+#status .sig b:nth-child(1) { height: 4px; } #status .sig b:nth-child(2) { height: 6px; } #status .sig b:nth-child(3) { height: 8px; } #status .sig b:nth-child(4) { height: 11px; }
+#status .bat { width: 24px; height: 12px; border: 1.5px solid #161a2b; border-radius: 4px; padding: 1.5px; display: block; }
+#status .bat b { display: block; height: 100%; width: 75%; background: #161a2b; border-radius: 1.5px; }
+#island { position: absolute; top: 10px; left: 50%; width: 104px; height: 30px; margin-left: -52px; border-radius: 20px; background: #000; z-index: 5; }
+#appfx { position: absolute; left: 0; right: 0; top: 46px; bottom: 0; pointer-events: none; z-index: 6; }
+.tapdot { position: absolute; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%;
+  background: rgba(22,26,43,.22); border: 3px solid rgba(255,255,255,.95); box-shadow: 0 2px 10px rgba(0,0,0,.25); }
+.ring { position: absolute; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; border: 3px solid rgba(47,69,196,.9); }
+.callout { position: absolute; border: 4px solid #2f45c4; border-radius: 14px; box-shadow: 0 0 0 6px rgba(47,69,196,.16); }
+.callout.green { border-color: #1d7a4b; box-shadow: 0 0 0 6px rgba(29,122,75,.16); }
+.callout.red { border-color: #b42318; box-shadow: 0 0 0 6px rgba(180,35,24,.14); }
+
+/* Overlay items */
+#layer { position: absolute; inset: 0; pointer-events: none; }
+.item { position: absolute; }
+.cap { display: flex; flex-direction: column; gap: 12px; }
+.cap.center { align-items: center; text-align: center; }
+.cap.left { align-items: flex-start; }
+.ln { display: block; width: fit-content; max-width: 100%; padding: 6px 24px 14px; border-radius: 18px;
+  font: 800 82px/1.02 var(--f-display); letter-spacing: -0.025em; }
+.ln .w { display: inline-block; white-space: pre; }
+.s-cream .ln { background: var(--cream); color: var(--ink); box-shadow: 0 10px 30px rgba(10,14,40,.18); }
+.s-white .ln { background: #fff; color: var(--ink); box-shadow: 0 10px 30px rgba(10,14,40,.18); }
+.s-ink .ln { background: var(--ink); color: var(--cream); box-shadow: 0 10px 30px rgba(10,14,40,.25); }
+.s-carbon .ln { background: var(--carbon); color: #fff; box-shadow: 0 10px 30px rgba(10,14,40,.25); }
+.s-plain .ln { padding: 0 0 4px; }
+.s-plain.dark .ln { color: var(--ink); }
+.s-plain.light .ln { color: #fff; text-shadow: 0 4px 24px rgba(0,0,0,.25); }
+.acc { color: var(--carbon); }
+.s-carbon .acc, .s-plain.light .acc { color: #ffe08a; }
+.s-ink .acc { color: #9fb0ff; }
+.red { color: var(--danger) !important; }
+.s-ink .red, .s-plain.light .red { color: #ff8a7d !important; }
+.green { color: var(--paid) !important; }
+.s-ink .green, .s-plain.light .green { color: #6fe0a6 !important; }
+.strike { text-decoration: line-through; text-decoration-thickness: 8px; text-decoration-color: var(--danger); }
+.sz-xl .ln { font-size: 104px; }
+.sz-l .ln { font-size: 82px; }
+.sz-xl-ish .ln { font-size: 94px; }
+.sz-m .ln { font-size: 62px; padding: 8px 22px 12px; border-radius: 16px; }
+.sz-s .ln { font: 600 46px/1.15 var(--f-body); letter-spacing: -0.01em; padding: 10px 22px 12px; border-radius: 14px; }
+.sz-xs .ln { font: 600 38px/1.2 var(--f-body); padding: 8px 18px 10px; border-radius: 12px; }
+.chip { display: inline-block; font: 500 32px/1 var(--f-mono); letter-spacing: .08em; text-transform: uppercase;
+  padding: 16px 22px 14px; border-radius: 999px; background: var(--ink); color: var(--cream); white-space: nowrap; }
+.chip.carbon { background: var(--carbon); color: #fff; }
+.chip.cream { background: var(--cream); color: var(--ink); }
+.chip.k-red { background: var(--danger); color: #fff; }
+.timer { font: 500 64px/1 var(--f-mono); letter-spacing: .02em; color: var(--cream); background: var(--ink);
+  padding: 18px 28px 16px; border-radius: 22px; display: inline-flex; align-items: center; gap: 18px; box-shadow: 0 10px 30px rgba(10,14,40,.25); }
+.timer .dot { width: 22px; height: 22px; border-radius: 50%; background: #ff5a4a; }
+.timer.done { background: var(--paid); }
+.timer.done .dot { background: #fff; }
+
+/* End card */
+.endcard { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  padding: 330px 162px 0 60px; text-align: center; color: #fff; }
+.endcard .logo { width: 220px; height: 220px; border-radius: 52px; box-shadow: 0 20px 50px rgba(0,0,0,.3); }
+.endcard .name { font: 800 104px/1 var(--f-display); letter-spacing: -0.03em; margin-top: 44px; }
+.endcard .sub { font: 500 44px/1.25 var(--f-body); opacity: .92; margin-top: 22px; }
+.endcard .cta { margin-top: 64px; font: 800 66px/1.05 var(--f-display); background: var(--cream); color: var(--ink);
+  padding: 22px 40px 28px; border-radius: 26px; box-shadow: 0 16px 40px rgba(0,0,0,.25); }
+.endcard .fine { margin-top: 36px; font: 500 34px/1.35 var(--f-mono); letter-spacing: .02em; opacity: .9; }
+
+/* Paper pad prop */
+.pad { width: 760px; height: 1000px; background: #fdf6d8; border-radius: 10px; position: relative; overflow: hidden;
+  box-shadow: 0 30px 70px rgba(30,25,10,.35), 0 0 0 1px rgba(0,0,0,.05); font-family: "Caveat", cursive; color: #2c3550; }
+.pad .top { height: 58px; background: #8a2b2b; }
+.pad .hd { display: flex; justify-content: space-between; padding: 26px 40px 10px; font: 700 34px/1 var(--f-body); color: #b03a3a; letter-spacing: .04em; }
+.pad .rows { position: absolute; top: 210px; left: 40px; right: 40px; }
+.pad .row { height: 66px; border-bottom: 2px solid rgba(176,58,58,.35); display: flex; justify-content: space-between; align-items: flex-end;
+  font-size: 50px; line-height: 1; padding-bottom: 6px; }
+.pad .row.x span:first-child { text-decoration: line-through; text-decoration-thickness: 3px; }
+.pad .math { position: absolute; right: 60px; bottom: 120px; font-size: 54px; text-align: right; line-height: 1.05; transform: rotate(-3deg); }
+.pad .ring { position: absolute; border: 14px solid rgba(120,80,30,.16); width: 230px; height: 230px; left: 70px; bottom: 60px; border-radius: 50%; margin: 0; }
+.pad .smudge { position: absolute; width: 260px; height: 90px; right: 140px; top: 470px; background: radial-gradient(closest-side, rgba(40,40,60,.18), transparent); transform: rotate(-12deg); }
+
+.pdfcard { width: 840px; background: #fff; border-radius: 18px; overflow: hidden; box-shadow: 0 40px 90px rgba(10,14,40,.4); }
+.pdfcard .bar { display: flex; align-items: center; gap: 18px; padding: 22px 26px; background: #f3f4f8; font: 600 32px/1.1 var(--f-body); color: var(--ink); }
+.pdfcard .bar .ic { width: 52px; height: 64px; border-radius: 8px; background: #b42318; color: #fff; font: 700 18px/64px var(--f-mono); text-align: center; flex: none; }
+.pdfcard .bar small { display: block; font: 500 24px/1.3 var(--f-mono); color: var(--muted); margin-top: 4px; }
+.pdfcard img { display: block; width: 100%; }
+
+.sticker { font: 800 54px/1.05 var(--f-display); padding: 18px 28px 22px; border-radius: 20px; background: var(--carbon); color: #fff; box-shadow: 0 14px 34px rgba(10,14,40,.3); }
+.sticker.k-cream { background: var(--cream); color: var(--ink); }
+.sticker.k-green { background: var(--paid); color: #fff; }
+.sticker.k-red { background: var(--danger); color: #fff; }
+.sticker.k-ink { background: var(--ink); color: var(--cream); }
+
+.checks { display: flex; flex-direction: column; gap: 22px; }
+.check { display: flex; align-items: center; gap: 26px; background: var(--cream); color: var(--ink); border-radius: 22px; padding: 24px 30px;
+  font: 700 50px/1.1 var(--f-body); letter-spacing: -0.01em; box-shadow: 0 12px 30px rgba(10,14,40,.25); }
+.check .bx { flex: none; width: 64px; height: 64px; border-radius: 16px; background: var(--paid); position: relative; }
+.check .bx::after { content: ""; position: absolute; left: 22px; top: 9px; width: 16px; height: 32px; border: solid #fff; border-width: 0 7px 7px 0; transform: rotate(45deg); }
+.price { font: 800 120px/1 var(--f-display); letter-spacing: -0.03em; color: #fff; }
+#safe { position: absolute; inset: 0; pointer-events: none; display: none; }
+#safe::before { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 480px; background: rgba(255,0,0,.25); }
+#safe::after { content: ""; position: absolute; top: 0; bottom: 0; right: 0; width: 162px; background: rgba(255,0,0,.25); }
+#safe.top::before { box-shadow: 0 -1440px 0 -1320px rgba(255,140,0,.25); }
+body.dark #status { background: #0f121a; color: #e8eaf2; }
+body.dark #status .sig b, body.dark #status .bat b { background: #e8eaf2; }
+body.dark #status .bat { border-color: #e8eaf2; }
+body.dark #screen { background: #0f121a; }
+body.showsafe #safe { display: block; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bg" class="bg-paper"></div>
+  <div id="phone">
+    <div id="bezel"></div>
+    <div id="screen"><div id="status"><span class="clock">7:42</span><span class="icons"><i class="sig"><b></b><b></b><b></b><b></b></i><i class="bat"><b></b></i></span></div><div id="island"></div><iframe id="app"></iframe><div id="appfx"></div></div>
+  </div>
+  <div id="layer"></div>
+  <div id="safe"></div>
+</div>
+<script>
+// Everything visible is a pure function of time t (seconds). The driver calls render(t) once per frame.
+var S = {
+  W: 390, H: 780,
+  cam: [],          // camera keyframes {t0, dur, from, to, ease}
+  camBase: { s: 1.6, fx: 195, fy: 0, px: 489, py: 600, frame: 1, op: 1 },
+  items: [],        // overlay items {el, tIn, tOut, enter, exit, words, dur}
+  fx: [],           // app-space effects (taps, callouts)
+  scroll: [],       // iframe scroll tweens {t0, dur, from, to}
+  scrollY: 0,
+  elAnims: [],      // iframe element tweens
+  timers: []
+};
+var $ = function (s, r) { return (r || document).querySelector(s); };
+var clamp = function (x, a, b) { return Math.max(a, Math.min(b, x)); };
+var E = {
+  lin: function (x) { return x; },
+  out: function (x) { return 1 - Math.pow(1 - x, 3); },
+  inout: function (x) { return x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; },
+  back: function (x) { var c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); },
+  expo: function (x) { return x === 1 ? 1 : 1 - Math.pow(2, -10 * x); }
+};
+function prog(t, t0, dur, ease) { if (dur <= 0) return t >= t0 ? 1 : 0; return (E[ease || "out"])(clamp((t - t0) / dur, 0, 1)); }
+function lerp(a, b, k) { return a + (b - a) * k; }
+
+function camAt(t) {
+  var c = Object.assign({}, S.camBase);
+  for (var i = 0; i < S.cam.length; i++) {
+    var k = S.cam[i]; if (t < k.t0) break;
+    var p = prog(t, k.t0, k.dur, k.ease || "inout");
+    for (var key in k.to) c[key] = lerp(k.from[key], k.to[key], p);
+  }
+  return c;
+}
+window.camAt = camAt;
+window.addCam = function (t0, dur, to, ease) {
+  var from = camAt(t0);
+  // Fill keys the keyframe doesn't set from the current camera, so later keyframes interpolate cleanly.
+  var full = Object.assign({}, from, to);
+  S.cam.push({ t0: t0, dur: dur, from: from, to: full, ease: ease });
+  S.cam.sort(function (a, b) { return a.t0 - b.t0; });
+};
+window.setClock = function (txt) { $("#status .clock").textContent = txt; };
+window.setBg = function (cls) { $("#bg").className = cls; };
+window.setAppSize = function (w, h) {
+  S.W = w; S.H = h; var f = $("#app"); f.style.width = w + "px"; f.style.height = h + "px";
+  $("#screen").style.width = w + "px"; $("#screen").style.height = (h + 46) + "px";
+};
+
+function wrapWords(html) {
+  // Wrap each word (outside tags) in a span so words can pop in one by one. *word* marks an accent.
+  html = html.replace(/\*([^*]+)\*/g, '<span class="acc">$1</span>');
+  var out = "", inTag = false, buf = "";
+  function flush() { if (buf) { out += buf.split(/(\s+)/).map(function (p) { return /^\s+$/.test(p) || !p ? p : '<span class="w">' + p + "</span>"; }).join(""); buf = ""; } }
+  for (var i = 0; i < html.length; i++) {
+    var ch = html[i];
+    if (ch === "<") { flush(); inTag = true; out += ch; }
+    else if (ch === ">") { inTag = false; out += ch; }
+    else if (inTag) out += ch; else buf += ch;
+  }
+  flush(); return out;
+}
+// Add an overlay item. o: {id, html | lines, cls, x, y, w, tIn, tOut, enter, exit, stagger, align, z}
+window.addItem = function (o) {
+  var el = document.createElement("div");
+  el.className = "item " + (o.cls || "");
+  if (o.lines) {
+    el.className += " cap " + (o.align || "center");
+    el.innerHTML = o.lines.map(function (l) { return '<div class="ln">' + wrapWords(l) + "</div>"; }).join("");
+  } else el.innerHTML = o.html;
+  el.style.left = (o.x == null ? 60 : o.x) + "px"; el.style.top = o.y + "px";
+  if (o.w !== 0) el.style.width = (o.w || 858) + "px";
+  if (o.z) el.style.zIndex = o.z;
+  if (o.rot) el.dataset.rot = o.rot;
+  $("#layer").appendChild(el);
+  var it = { id: o.id, el: el, tIn: o.tIn, tOut: o.tOut == null ? 1e9 : o.tOut, enter: o.enter || (o.lines ? "words" : "pop"),
+    exit: o.exit || "fade", stagger: o.stagger == null ? 0.07 : o.stagger, words: [].slice.call(el.querySelectorAll(".w")),
+    lnEls: [].slice.call(el.querySelectorAll(".ln")), rot: o.rot || 0, dur: o.adur || 0.32 };
+  S.items.push(it);
+  return el.getBoundingClientRect().height;
+};
+window.endItem = function (id, t) { S.items.forEach(function (it) { if (it.id === id && it.tOut > t) it.tOut = t; }); };
+window.removeItem = function (id) { S.items = S.items.filter(function (it) { if (it.id === id) { it.el.remove(); return false; } return true; }); };
+window.itemHeight = function (id) { var it = S.items.filter(function (x) { return x.id === id; })[0]; return it ? it.el.offsetHeight : 0; };
+
+function renderItem(it, t) {
+  var el = it.el;
+  if (t < it.tIn - 0.001 || t > it.tOut + 0.35) { el.style.visibility = "hidden"; return; }
+  el.style.visibility = "visible";
+  var ex = t > it.tOut ? prog(t, it.tOut, 0.22, "inout") : 0;
+  var tf = "", op = 1;
+  var p = prog(t, it.tIn, it.dur, "back"), pl = prog(t, it.tIn, it.dur, "out");
+  if (it.enter === "words") {
+    // Line boxes scale in, words pop one after another.
+    var wi = 0;
+    it.lnEls.forEach(function (ln) {
+      // A line's box appears with its first word, so no empty boxes show while words are still arriving.
+      var lt = it.tIn + wi * it.stagger - 0.04, lp = prog(t, lt, 0.26, "back");
+      ln.style.transform = "scale(" + lerp(0.85, 1, lp) + ")"; ln.style.opacity = clamp(prog(t, lt, 0.12, "lin"), 0, 1);
+      [].forEach.call(ln.querySelectorAll(".w"), function (w) {
+        var wt = it.tIn + wi * it.stagger, wp = prog(t, wt, 0.28, "back");
+        w.style.opacity = prog(t, wt, 0.1, "lin"); w.style.transform = "translateY(" + lerp(26, 0, wp) + "px) scale(" + lerp(.85, 1, wp) + ")";
+        wi++;
+      });
+    });
+  } else if (it.enter === "pop") { tf = "scale(" + lerp(0.6, 1, p) + ")"; op = pl; }
+  else if (it.enter === "up") { tf = "translateY(" + lerp(140, 0, pl) + "px)"; op = pl; }
+  else if (it.enter === "rise") { tf = "translateY(" + lerp(1300, 0, prog(t, it.tIn, it.dur, "expo")) + "px)"; }
+  else if (it.enter === "down") { tf = "translateY(" + lerp(-140, 0, pl) + "px)"; op = pl; }
+  else if (it.enter === "left") { tf = "translateX(" + lerp(-1100, 0, prog(t, it.tIn, it.dur, "expo")) + "px)"; }
+  else if (it.enter === "right") { tf = "translateX(" + lerp(1100, 0, prog(t, it.tIn, it.dur, "expo")) + "px)"; }
+  else if (it.enter === "fade") { op = pl; }
+  else if (it.enter === "stamp") { tf = "scale(" + lerp(2.2, 1, prog(t, it.tIn, 0.22, "out")) + ")"; op = prog(t, it.tIn, 0.12, "lin"); }
+  else if (it.enter === "none") { }
+  if (it.rot) tf += " rotate(" + it.rot + "deg)";
+  if (ex) {
+    if (it.exit === "left") tf = "translateX(" + lerp(0, -1200, E.inout(ex)) + "px) " + tf;
+    else if (it.exit === "drop") tf = "translateY(" + lerp(0, 1400, E.inout(ex)) + "px) " + tf;
+    else if (it.exit === "up") tf = "translateY(" + lerp(0, -80, ex) + "px) " + tf;
+    op *= 1 - ex;
+    if (it.exit === "cut") op = 0;
+  }
+  el.style.transform = tf; el.style.opacity = op;
+}
+
+// App-space effects: taps and callouts, positioned in iframe CSS pixels.
+window.addTap = function (x, y, t) {
+  var d = document.createElement("div"); d.className = "tapdot"; $("#appfx").appendChild(d);
+  var r = document.createElement("div"); r.className = "ring"; $("#appfx").appendChild(r);
+  S.fx.push({ kind: "tap", el: d, ring: r, x: x, y: y, t: t });
+};
+window.addCallout = function (o) {
+  var d = document.createElement("div"); d.className = "callout " + (o.color || ""); $("#appfx").appendChild(d);
+  S.fx.push({ kind: "callout", el: d, o: o });
+};
+function renderFx(t, scrollY) {
+  S.fx.forEach(function (f) {
+    if (f.kind === "tap") {
+      var a = t - f.t; // tap happens at f.t; dot shows from -0.28 to +0.32
+      var vis = a > -0.28 && a < 0.4;
+      f.el.style.display = f.ring.style.display = vis ? "block" : "none";
+      if (!vis) return;
+      var y = f.y - (f.absolute ? 0 : 0);
+      f.el.style.left = f.ring.style.left = f.x + "px"; f.el.style.top = f.ring.style.top = y + "px";
+      var inP = prog(a, -0.28, 0.18, "out"), press = a < 0 ? 1 - 0.15 * prog(a, -0.1, 0.1, "out") : lerp(0.85, 1, prog(a, 0, 0.12, "out"));
+      var outP = prog(a, 0.15, 0.25, "lin");
+      f.el.style.opacity = inP * (1 - outP); f.el.style.transform = "scale(" + (lerp(1.4, 1, inP) * press) + ")";
+      var rp = prog(a, 0, 0.4, "out");
+      f.ring.style.opacity = a >= 0 ? 1 - rp : 0; f.ring.style.transform = "scale(" + lerp(1, 2.6, rp) + ")";
+    } else {
+      var o = f.o, vis2 = t >= o.tIn && t <= o.tOut + 0.25;
+      f.el.style.display = vis2 ? "block" : "none"; if (!vis2) return;
+      var p = prog(t, o.tIn, 0.3, "back"), q = t > o.tOut ? prog(t, o.tOut, 0.22, "lin") : 0;
+      var sy = o.fixed ? 0 : scrollY;
+      f.el.style.left = (o.x - 6) + "px"; f.el.style.top = (o.y - 6 - sy) + "px";
+      f.el.style.width = (o.w + 12) + "px"; f.el.style.height = (o.h + 12) + "px";
+      f.el.style.opacity = prog(t, o.tIn, 0.12, "lin") * (1 - q); f.el.style.transform = "scale(" + lerp(1.18, 1, p) + ")";
+    }
+  });
+}
+
+window.addScroll = function (t0, dur, to, ease) {
+  var from = scrollAt(t0); S.scroll.push({ t0: t0, dur: dur, from: from, to: to, ease: ease || "inout" });
+};
+function scrollAt(t) {
+  var y = 0;
+  S.scroll.forEach(function (k) { if (t >= k.t0) y = lerp(k.from, k.to, prog(t, k.t0, k.dur, k.ease)); });
+  return y;
+}
+window.scrollAt = scrollAt;
+window.addElAnim = function (o) { S.elAnims.push(o); };
+window.addTimer = function (o) {
+  var el = document.createElement("div"); el.className = "item"; el.style.left = o.x + "px"; el.style.top = o.y + "px";
+  el.innerHTML = '<div class="timer"><span class="dot"></span><span class="tv">0:00.0</span></div>';
+  $("#layer").appendChild(el); o.el = el; S.timers.push(o);
+};
+
+window.render = function (t) {
+  var c = camAt(t), ph = $("#phone");
+  ph.style.transform = "translate(" + (c.px - c.fx * c.s) + "px," + (c.py - c.fy * c.s) + "px) scale(" + c.s + ")";
+  ph.style.opacity = c.op;
+  $("#bezel").style.opacity = c.frame; $("#island").style.opacity = c.frame;
+  $("#screen").style.borderRadius = (48 * c.frame) + "px";
+  var win = $("#app").contentWindow, sy = Math.round(scrollAt(t) * 100) / 100;
+  if (win && win.__scrollTo) win.__scrollTo(0, sy);
+  var actualY = win ? win.scrollY : 0;
+  var doc = win && win.document;
+  S.elAnims.forEach(function (a) {
+    var el = doc && doc.querySelector(a.sel); if (!el) return;
+    var p = prog(t, a.t0, a.dur, a.ease || "out");
+    if (a.kind === "slideUp") el.style.transform = "translateY(" + lerp(100, 0, p) + "%)";
+    if (a.kind === "fadeIn") el.style.opacity = p;
+    if (a.kind === "flash") el.style.boxShadow = p < 1 ? "0 0 0 " + lerp(0, 10, p) + "px rgba(47,69,196," + (0.45 * (1 - p)) + ")" : "";
+  });
+  S.items.forEach(function (it) { renderItem(it, t); });
+  renderFx(t, actualY);
+  S.timers.forEach(function (o) {
+    var vis = t >= o.tIn && t <= (o.tOut || 1e9);
+    o.el.style.visibility = vis ? "visible" : "hidden";
+    var el = Math.max(0, Math.min(t, o.tStop || 1e9) - o.t0);
+    var m = Math.floor(el / 60), s = el - m * 60;
+    o.el.querySelector(".tv").textContent = m + ":" + (s < 10 ? "0" : "") + s.toFixed(1);
+    o.el.firstChild.classList.toggle("done", !!o.tStop && t >= o.tStop);
+    o.el.style.transform = "scale(" + lerp(0.6, 1, prog(t, o.tIn, 0.3, "back")) + ")";
+  });
+};
+</script>
+</body>
+</html>
