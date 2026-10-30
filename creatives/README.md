@@ -6,20 +6,23 @@ Everything shown in the videos is the real app (`index.html`) being driven step 
 
 | # | File | Length | Audience | Hook style |
 |---|------|--------|----------|------------|
-| 1 | `videos/01-speed-plumber.mp4` | ~21 s | Plumbers | Speed (stopwatch) |
-| 2 | `videos/02-paper-vs-app.mp4` | ~17 s | Electricians, all trades | Before / after |
-| 3 | `videos/03-pov-late-invoices.mp4` | ~18 s | Anyone who bills clients (cleaning example) | POV, relatable pain |
-| 4 | `videos/04-who-owes-you.mp4` | ~20 s | Everyone (landscaping example) | Question, chasing payments |
-| 5 | `videos/05-wish-i-knew.mp4` | ~19 s | New business owners (painting example) | "Things I wish I knew" listicle |
-| 6 | `videos/06-small-jobs.mp4` | ~18 s | Handymen, all trades | Money left on the table |
-| 7 | `videos/07-side-hustle.mp4` | ~18 s | Side hustlers (pressure washing) | Identity callout |
-| 8 | `videos/08-no-monthly-fee.mp4` | ~16.5 s | Everyone | Anti-subscription |
+| 1 | `videos/01-speed-plumber.mp4` | ~24.5 s | Plumbers | Speed (stopwatch) |
+| 2 | `videos/02-paper-vs-app.mp4` | ~18 s | Electricians, all trades | Before / after |
+| 3 | `videos/03-pov-late-invoices.mp4` | ~21 s | Anyone who bills clients (cleaning example) | POV, relatable pain |
+| 4 | `videos/04-who-owes-you.mp4` | ~21.5 s | Everyone (landscaping example) | Question, chasing payments |
+| 5 | `videos/05-wish-i-knew.mp4` | ~21.5 s | New business owners (painting example) | "Things I wish I knew" listicle |
+| 6 | `videos/06-small-jobs.mp4` | ~20 s | Handymen, all trades | Money left on the table |
+| 7 | `videos/07-side-hustle.mp4` | ~19 s | Side hustlers (pressure washing) | Identity callout |
+| 8 | `videos/08-no-monthly-fee.mp4` | ~18 s | Everyone | Anti-subscription |
 
-All are 1080×1920, H.264 + AAC, 30 fps, 1.5–3 MB each. Covers are in `covers/` with the same names (1080×1920 PNG).
+All are 1080×1920, H.264 + AAC, 30 fps, about 2–3 MB each, **with a voiceover**. The same videos without the voiceover (sound effects only) are in `videos/no-voiceover/`. Covers are in `covers/` with the same names (1080×1920 PNG).
 
 **Safe zone.** Captions sit between about y=200 and y=1440 and stay out of the right 15%, so TikTok's buttons and caption text don't cover them. The phone can extend into the bottom area. That's fine, since nothing there needs reading.
 
-**Audio.** Each video has light sound design that was generated, not sampled: taps, key clicks, whooshes, a "ding" on send. There's no music. In TikTok, add a sound from the Commercial Music Library (business accounts) or the suggested type below, and set the original sound to about 30–50% so the taps still come through. If you use a voiceover instead, turn the original down to about 15%.
+**Audio.** Every video has a voiceover that walks through what's on screen, timed to each caption, over light sound effects (taps, key clicks, a "ding" on send). The voice and the effects were generated for these videos; there's no music and nothing sampled.
+- **Voiced version (`videos/`):** post as is, or add a trending sound under it at about 10–20% so the voice stays clear.
+- **No-voiceover version (`videos/no-voiceover/`):** use it when you want a trending sound front and center, or to record your own voice over it in TikTok (Edit → Voiceover). Your own voice usually beats a generated one, and the scripts below are written to be read aloud.
+- **Label the AI voice.** The voiceover is synthetic (Kokoro, an open-source text-to-speech model). Turn on **"AI-generated content"** under the post's settings (More options) when you upload the voiced versions. TikTok asks creators to label realistic AI-made audio, and the label doesn't hurt reach the way a takedown would.
 
 **Before posting:** put the app link (`https://jesse-4.github.io/job-ticket/`) in your bio. Every video ends on "Link in bio".
 
@@ -125,6 +128,89 @@ All are 1080×1920, H.264 + AAC, 30 fps, 1.5–3 MB each. Covers are in `covers/
 
 ---
 
+## Voiceover scripts
+
+What the voice says in each video, line by line. Each line starts when its caption appears. To record your own voice instead, open the matching file in `videos/no-voiceover/` in TikTok's editor, tap **Voiceover**, and read these at a relaxed pace.
+
+**1. Speed run (male voice)**
+1. Water heater quote. Clock starts now.
+2. Your hourly rate, your business name.
+3. Search the job.
+4. Priced from your own rate. Not a guess.
+5. Add the customer.
+6. And send it.
+7. Done. Under a minute.
+8. And that's the PDF your customer gets.
+9. Job Ticket. Your first three invoices are free. Link in bio.
+
+**2. Carbon pad vs. app (male)**
+1. Still writing quotes on one of these?
+2. Same job, in the app.
+3. It asks one question.
+4. Then it does the math.
+5. Send it as a PDF.
+6. Before. After. Which one would you rather send?
+7. Job Ticket. Quotes are always free. Link in bio.
+
+**3. POV 10:47 PM (female)**
+1. POV: it's 10:47, and the invoices still aren't sent.
+2. New invoice.
+3. Search the job.
+4. Four bedrooms this time.
+5. Add the customer.
+6. Send.
+7. Sent. And it's still 10:47.
+8. Job Ticket. Invoices done before bed. Link in bio.
+
+**4. Who owes you (female)**
+1. Quick question. Who owes you money right now?
+2. If the answer is, let me check my texts…
+3. Every unpaid invoice, totaled.
+4. The late ones get flagged in red.
+5. There's who to call.
+6. When they pay, it's one tap.
+7. Paid. Off the list.
+8. And your totals update by themselves.
+9. Job Ticket. Know who owes you. Link in bio.
+
+**5. Things I wish I knew (male)**
+1. Things I wish I knew when I started my business.
+2. One. Price from an hourly rate, not a gut feeling.
+3. Two. Mark up your materials. You drove to get them.
+4. Three. Set a minimum. Small jobs still cost you the drive.
+5. Four. Put the price in writing, before you start.
+6. Job Ticket does the math for you. Link in bio.
+
+**6. Small jobs (male)**
+1. Hey handymen, you're probably losing money on small jobs.
+2. Say it's a sticky door. Half an hour, eight bucks in parts.
+3. That comes to forty-one dollars and seventy cents. (The amount is read from the app at render time.)
+4. But the drive and the gas? It's under your minimum.
+5. One tap.
+6. Your minimum. Every time.
+7. Job Ticket. Link in bio.
+
+**7. Side hustle (female)**
+1. Starting a pressure washing side hustle?
+2. Look legit from day one.
+3. Pick your trade, and name your business.
+4. Quote a driveway.
+5. Put in the size, and it does the math.
+6. Send.
+7. Your name on top.
+8. And quotes are always free.
+9. Job Ticket. Link in bio.
+
+**8. No monthly fee (male)**
+1. Another app with a monthly fee? No thanks.
+2. Here's an AC tune-up quote.
+3. Sent as a PDF.
+4. Works with no signal. Your data stays on your phone.
+5. Then it's $29. Once. No monthly fee.
+6. Job Ticket. Link in bio.
+
+---
+
 ## Scripts to film yourself
 
 Creator-style clips often beat polished ones. Film on your phone, vertical, natural light. Use the app's real screen for any phone shots (screen-record, or film the phone over your shoulder). Keep the on-screen text inside the safe zone: upper two-thirds, away from the right edge.
@@ -196,7 +282,7 @@ Post once a day at the times your audience is off work. For trades that's usuall
 | 5 | **4. Who owes you** | Getting-paid angle |
 | 6 | **6. Small jobs** | Money-left-on-the-table angle |
 | 7 | **5. Things I wish I knew** | Listicle, comment bait |
-| 8 | Repost the **week 1 winner** with a new hook line and a different trending sound | Hook vs. sound: which drove the win |
+| 8 | Repost the **week 1 winner** from `videos/no-voiceover/` with a trending sound (or your own voice) instead of the generated voice | Voice vs. no voice: which keeps people watching |
 | 9 | **7. Side hustle** | Side-hustle audience |
 | 10 | **Script B** (filmed) | Face-to-camera storytelling |
 | 11 | **8. No monthly fee** | Price-led hook |
@@ -232,4 +318,4 @@ cd creatives/src
 PREVIEW=1 node videos/03-pov-late-invoices.js   # quick stills to build/snaps, no video
 ```
 
-Needs Node with Playwright/Chromium, ffmpeg, Python 3 with numpy and Pillow, and `pdftoppm` (poppler). `stage.html` is the canvas (phone frame, captions, end card), `engine.js` is the driver, `sound.py` synthesizes the sound effects, and `videos/*.js` are the eight scripts. Intermediate files go to `creatives/build/` (ignored by git).
+Needs Node with Playwright/Chromium, ffmpeg, Python 3 with numpy and Pillow, and `pdftoppm` (poppler). For the voiceover: `pip install kokoro-onnx soundfile`, download `kokoro-v1.0.onnx` and `voices-v1.0.bin` from the [kokoro-onnx releases](https://github.com/thewh1teagle/kokoro-onnx/releases), and set `JT_KOKORO_DIR` to their folder. Lines are spoken with `v.say("…")` in the video scripts, cached in `build/vo/`, and `VO_REPORT=1` prints any place where the picture holds while a line finishes. `stage.html` is the canvas (phone frame, captions, end card), `engine.js` is the driver, `sound.py` synthesizes the sound effects and mixes the voice (ducking the effects under it), `tts.py` speaks one line, and `videos/*.js` are the eight scripts. Intermediate files go to `creatives/build/` (ignored by git).

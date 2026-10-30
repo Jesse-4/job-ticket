@@ -21,7 +21,7 @@ const PAD = `<div class="pad">
 const pdfCard = (png, name) => `<div class="pdfcard"><div class="bar"><span class="ic">PDF</span><div>${name}<small>Bright Line Electric</small></div></div><img src="${png}"></div>`;
 
 (async () => {
-  const v = new Video("02-paper-vs-app", { bg: "bg-paper" });
+  const v = new Video("02-paper-vs-app", { voice: "am_michael", bg: "bg-paper" });
   await v.open();
   await v.quickSetup("Electrical", 95, "Bright Line Electric");
   await v.cam({ op: 0, py: 2400 }, 0);
@@ -29,6 +29,7 @@ const pdfCard = (png, name) => `<div class="pdfcard"><div class="bar"><span clas
   // Hook: the pad is already on screen at frame 0.
   await v.item("pad", PAD, { x: 150, y: 600, w: 0, enter: "pop", delay: -0.5, rot: -4, sound: "scribble", exit: "drop" });
   await v.cap("hook", ["Still writing quotes", "on *one of these?*"], { y: 214, size: "l", style: "ink", delay: -0.5, stagger: 0.05 });
+  await v.say("Still writing quotes on one of these?");
   await v.wait(1.3);
   await v.snap("hook");
   await v.item("st1", '<div class="sticker k-red">math done in the truck</div>', { x: 120, y: 1150, w: 0, enter: "stamp", rot: -6, sound: "thud" });
@@ -41,6 +42,7 @@ const pdfCard = (png, name) => `<div class="pdfcard"><div class="bar"><span clas
   await v.end("pad"); await v.end("st1"); await v.end("st2"); await v.end("hook");
   await v.wait(0.2);
   await v.cap("try", ["Same job. *In the app.*"], { y: 214, size: "l", style: "ink" });
+  await v.say("Same job, in the app.");
   await v.cam({ op: 1, s: 1.95, fx: 195, fy: 300, px: 489, py: 2700 }, 0);
   await v.cam({ py: 1000 }, 0.7, "out", "whoosh");
   await v.scrollTo("#tplBox", 0, 70);
@@ -55,6 +57,7 @@ const pdfCard = (png, name) => `<div class="pdfcard"><div class="bar"><span clas
 
   // The size question.
   await v.cap("q", ["It asks *one* question"], { y: 300, size: "m", style: "white" });
+  await v.say("It asks one question.");
   await v.scrollTo("#tplPreview", 0.5, 30);
   await v.callout(".tpl-ask", { dur: 1.6, pad: 2 });
   await v.wait(0.5);
@@ -63,6 +66,7 @@ const pdfCard = (png, name) => `<div class="pdfcard"><div class="bar"><span clas
   await v.blur();
   await v.end("q");
   await v.cap("q2", ["…then does the math"], { y: 300, size: "m", style: "white" });
+  await v.say("Then it does the math.");
   await v.callout("#tplLines .sum", { dur: 1.6, pad: 4, color: "green" });
   await v.snap("math");
   await v.wait(1.5);
@@ -72,6 +76,7 @@ const pdfCard = (png, name) => `<div class="pdfcard"><div class="bar"><span clas
   // Send it, then put the two side by side.
   await v.setVal("#f-cname", "Mrs. Kowalski");
   await v.cap("send", ["Send it as a PDF"], { y: 300, size: "m", style: "white" });
+  await v.say("Send it as a P D F.");
   await v.cam({ s: 1.62, fx: 195, fy: 0, px: 489, py: 600 }, 0.5);
   await v.wait(0.3);
   await v.tap("#mSend", { post: 0 });
@@ -86,6 +91,7 @@ const pdfCard = (png, name) => `<div class="pdfcard"><div class="bar"><span clas
   await v.end("send");
   await v.cam({ op: 0 }, 0.25);
   await v.cap("vs", ["Before. *After.*"], { y: 214, size: "xl", style: "ink" });
+  await v.say("Before. After. Which one would you rather send?");
   await v.item("bpad", '<div style="transform:scale(.68);transform-origin:0 0;width:517px;height:680px">' + PAD + "</div>",
     { x: 24, y: 560, w: 0, enter: "left", adur: 0.5, rot: -5, sound: "whoosh" });
   await v.item("bpdf", `<div style="transform:scale(.72);transform-origin:0 0;width:605px">${pdfCard(png, pdfName)}</div>`,
@@ -95,7 +101,7 @@ const pdfCard = (png, name) => `<div class="pdfcard"><div class="bar"><span clas
   await v.wait(2.8);
   await v.snap("vs");
 
-  await endCard(v, { lines: ["Ditch the carbon pad"] });
+  await endCard(v, { say: "Job Ticket. Quotes are always free. Link in bio.", lines: ["Ditch the carbon pad"] });
   await v.snap("end");
 
   await v.finish(async (v) => {

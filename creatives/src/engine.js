@@ -113,6 +113,33 @@ class Video {
     await this.still(path.join(dir, this.name + "-" + this.T.toFixed(1).padStart(5, "0") + "-" + label + ".png"));
   }
 
+  // Voiceover: speak a line starting now. If the previous line is still playing, hold the frame until it ends,
+  // so the voice never drifts out of sync with what's on screen. Lines are cached in build/vo/.
+  async say(text, o = {}) {
+    if (this.T < (this.voEnd || 0)) {
+      const hold = this.voEnd - this.T + 0.06;
+      if (hold > 0.35 && process.env.VO_REPORT) console.log(`  hold ${hold.toFixed(2)}s before "${text}"`);
+      await this.wait(hold);
+    }
+    const voice = o.voice || this.opts.voice || "am_michael";
+    const speed = o.speed || this.opts.voiceSpeed || 1.08;
+    const dir = path.join(ROOT, "build", "vo");
+    fs.mkdirSync(dir, { recursive: true });
+    const key = require("crypto").createHash("sha1").update([voice, speed, text].join("|")).digest("hex").slice(0, 16);
+    const file = path.join(dir, key + ".wav");
+    let dur;
+    if (fs.existsSync(file + ".dur")) dur = parseFloat(fs.readFileSync(file + ".dur", "utf8"));
+    else {
+      dur = parseFloat(execFileSync("python3", [path.join(__dirname, "tts.py"), voice, String(speed), file, text], { encoding: "utf8" }).trim().split("\n").pop());
+      fs.writeFileSync(file + ".dur", String(dur));
+    }
+    this.events.push({ t: this.T + (o.delay || 0), kind: "vo", file, dur, text });
+    this.voEnd = this.T + (o.delay || 0) + dur;
+    return dur;
+  }
+  // Wait until the current voiceover line has finished (plus a breath).
+  async voDone(extra = 0.15) { if (this.T < (this.voEnd || 0) + extra) await this.wait((this.voEnd || 0) + extra - this.T); }
+
   sfx(kind, at, vol) { this.events.push({ t: at == null ? this.T : at, kind, vol: vol == null ? 1 : vol }); }
 
   // Captions and overlays. Times are relative to now.
@@ -283,11 +310,15 @@ class Video {
     const evFile = path.join(ROOT, "build", this.name + ".events.json");
     const wav = path.join(ROOT, "build", this.name + ".wav");
     fs.writeFileSync(evFile, JSON.stringify({ duration: dur, events: this.events }));
-    execFileSync("python3", [path.join(__dirname, "sound.py"), evFile, wav], { stdio: "inherit" });
-    const out = path.join(ROOT, "videos", this.name + ".mp4");
-    execFileSync("ffmpeg", ["-loglevel", "error", "-y", "-i", this.tmp, "-i", wav, "-c:v", "copy", "-c:a", "aac", "-b:a", "160k",
-      "-shortest", "-movflags", "+faststart", out], { stdio: "inherit" });
-    console.log("video", out, dur.toFixed(1) + "s");
+    // Two versions: with the voiceover (main) and sound effects only (for pairing with a trending sound).
+    const sfxWav = path.join(ROOT, "build", this.name + ".sfx.wav");
+    execFileSync("python3", [path.join(__dirname, "sound.py"), evFile, wav, sfxWav], { stdio: "inherit" });
+    fs.mkdirSync(path.join(ROOT, "videos", "no-voiceover"), { recursive: true });
+    for (const [a, out] of [[wav, path.join(ROOT, "videos", this.name + ".mp4")], [sfxWav, path.join(ROOT, "videos", "no-voiceover", this.name + ".mp4")]]) {
+      execFileSync("ffmpeg", ["-loglevel", "error", "-y", "-i", this.tmp, "-i", a, "-c:v", "copy", "-c:a", "aac", "-b:a", "160k",
+        "-shortest", "-movflags", "+faststart", out], { stdio: "inherit" });
+    }
+    console.log("video", path.join(ROOT, "videos", this.name + ".mp4"), dur.toFixed(1) + "s");
   }
 }
 
@@ -304,7 +335,9 @@ async function endCard(v, o = {}) {
       <div class="cta">${o.cta || "Link in bio"}</div>
       <div class="fine">${o.fine || "3 free invoices · quotes always free"}</div>
     </div>`, { x: 0, y: 0, w: 1080, enter: "up", adur: 0.45, sound: "pop" });
+  if (o.say) await v.say(o.say);
   await v.wait(o.hold || 2.6);
+  await v.voDone(0.35);
 }
 
 module.exports = { Video, endCard, FPS };

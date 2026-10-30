@@ -2,19 +2,24 @@
 const { Video, endCard } = require("../engine");
 
 (async () => {
-  const v = new Video("07-side-hustle", { bg: "bg-paper" });
+  const v = new Video("07-side-hustle", { voice: "af_heart", bg: "bg-paper" });
   await v.open();
   await v.cam({ s: 1.62, fx: 195, fy: 0, px: 489, py: 700 }, 0);
 
   await v.cap("hook", ["Starting a", "*pressure washing*", "side hustle?"], { y: 214, x: 60, align: "left", size: "l", style: "carbon", delay: -0.5, stagger: 0.06 });
+
+  await v.say("Starting a pressure washing side hustle?");
   await v.wait(1.6);
   await v.snap("hook");
   await v.cap("hook2", ["Look legit from day one."], { y: 560, x: 60, align: "left", size: "s", style: "ink", sound: "pop" });
+  await v.say("Look legit from day one.");
   await v.wait(1.3);
+  await v.voDone(0.1);
   await v.end("hook"); await v.end("hook2");
 
   // Setup.
   await v.cap("c1", ["Pick your trade, name it"], { y: 300, size: "m", style: "white" });
+  await v.say("Pick your trade, and name your business.");
   await v.cam({ s: 2.1, fx: 195, fy: 280, px: 489, py: 1000 }, 0.6, "inout", "whoosh");
   await v.tap("#w-trade", { pre: 0.25, post: 0.1, action: () => v.setVal("#w-trade", "Pressure washing") });
   await v.wait(0.3);
@@ -27,6 +32,7 @@ const { Video, endCard } = require("../engine");
 
   // Quote a driveway.
   await v.cap("c2", ["Quote a driveway"], { y: 300, size: "m", style: "white" });
+  await v.say("Quote a driveway.");
   await v.cam({ s: 1.95, fx: 195, fy: 300, px: 489, py: 1000 }, 0.4);
   await v.scrollTo("#tplBox", 0.4, 70);
   await v.tap("#tplSearch", { pre: 0.2, post: 0.05 });
@@ -36,6 +42,7 @@ const { Video, endCard } = require("../engine");
   await v.tap(card, { pre: 0.25, post: 0.2 });
   await v.end("c2");
   await v.cap("c3", ["How big? It does the math"], { y: 300, size: "m", style: "white" });
+  await v.say("Put in the size, and it does the math.");
   await v.scrollTo("#tplPreview", 0.5, 40);
   await v.tap("#tplAsk", { pre: 0.2, post: 0.05 });
   await v.type("#tplAsk", "900", { cps: 8 });
@@ -49,6 +56,7 @@ const { Video, endCard } = require("../engine");
   // Send.
   await v.setVal("#f-cname", "Mike Alvarez");
   await v.cap("c4", ["Send"], { y: 300, size: "m", style: "white" });
+  await v.say("Send.");
   await v.cam({ s: 1.62, fx: 195, fy: 0, px: 489, py: 600 }, 0.4);
   await v.tap("#mSend", { post: 0 });
   await v.slideSheet("#sendSheet .sheet");
@@ -63,16 +71,18 @@ const { Video, endCard } = require("../engine");
 
   await v.cam({ op: 0 }, 0.25);
   await v.cap("c5", ["Your name on top.", "*Like a real company.*"], { y: 214, size: "l", style: "carbon" });
+  await v.say("Your name on top.");
   await v.item("pdf", `<div class="pdfcard"><div class="bar"><span class="ic">PDF</span><div>${pdfName}<small>Fresh Start Washing</small></div></div><img src="${png}"></div>`,
     { x: 70, y: 560, w: 0, enter: "rise", adur: 0.6, sound: "whoosh", rot: -1.5 });
   await v.wait(0.6);
   await v.item("arrow", '<div class="sticker k-ink" style="font-size:38px;padding:12px 20px 14px">↑ your business name</div>', { x: 100, y: 770, w: 0, enter: "stamp", rot: -4, sound: "thud" });
   await v.wait(0.6);
   await v.cap("c6", ["Quotes are always free."], { y: 1330, x: 60, align: "left", size: "s", style: "ink", sound: "pop" });
+  await v.say("And quotes are always free.");
   await v.wait(1.8);
   await v.snap("pdf");
 
-  await endCard(v, { lines: ["Quotes &amp; invoices for your side hustle"] });
+  await endCard(v, { say: "Job Ticket. Link in bio.", lines: ["Quotes &amp; invoices for your side hustle"] });
 
   await v.finish(async (v) => {
     await v.page.evaluate(() => S.items.forEach((i) => i.el.remove()));

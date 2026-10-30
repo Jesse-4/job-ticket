@@ -111,25 +111,26 @@ SOUNDS = {k: f() for k, f in {
     "ding": ding, "thud": thud, "tick": tick, "scribble": scribble}.items()}
 
 
-def main(src, dst):
-    data = json.load(open(src))
-    n = int((data["duration"] + 1) * SR)
-    mix = np.zeros(n)
-    for ev in data["events"]:
-        s = SOUNDS.get(ev["kind"])
-        if s is None:
-            continue
-        i = int(ev["t"] * SR)
-        if i < 0:  # sounds scheduled just before frame 0 start part-way through
-            s, i = s[-i:], 0
-        if i >= n or not len(s):
-            continue
-        seg = s[: n - i] * ev.get("vol", 1)
-        mix[i: i + len(seg)] += seg
-    mix = mix[: int(data["duration"] * SR)]
+def load_vo(path):
+    """Load a voiceover clip, resample to SR and level it to a consistent loudness."""
+    with wave.open(path) as w:
+        sr, ch = w.getframerate(), w.getnchannels()
+        raw = np.frombuffer(w.readframes(w.getnframes()), dtype=np.int16).astype(np.float64) / 32768
+    if ch > 1:
+        raw = raw.reshape(-1, ch).mean(axis=1)
+    if sr != SR:
+        t_old = np.arange(len(raw)) / sr
+        raw = np.interp(np.arange(int(len(raw) * SR / sr)) / SR, t_old, raw)
+    rms = np.sqrt(np.mean(raw ** 2)) or 1
+    raw = raw * (0.16 / rms)  # about -16 dBFS RMS
+    peak = np.max(np.abs(raw))
+    return raw * (0.95 / peak) if peak > 0.95 else raw
+
+
+def write(dst, mix):
     peak = np.max(np.abs(mix)) or 1
-    if peak > 0.89:
-        mix = mix / peak * 0.89
+    if peak > 0.95:
+        mix = mix / peak * 0.95
     pcm = (mix * 32767).astype(np.int16)
     stereo = np.repeat(pcm[:, None], 2, axis=1)
     with wave.open(dst, "wb") as w:
@@ -137,5 +138,40 @@ def main(src, dst):
         w.writeframes(stereo.tobytes())
 
 
+def main(src, dst, sfx_dst=None):
+    data = json.load(open(src))
+    n = int((data["duration"] + 1) * SR)
+    sfx = np.zeros(n)
+    vo = np.zeros(n)
+    duck = np.ones(n)
+    ramp = int(0.08 * SR)
+    for ev in data["events"]:
+        i = int(ev["t"] * SR)
+        if ev["kind"] == "vo":
+            clip = load_vo(ev["file"])
+            i = max(i, 0)
+            seg = clip[: max(0, n - i)]
+            vo[i: i + len(seg)] += seg
+            a, b = max(0, i - ramp), min(n, i + len(seg) + ramp)
+            duck[a:b] = np.minimum(duck[a:b], 0.4)
+            continue
+        s = SOUNDS.get(ev["kind"])
+        if s is None:
+            continue
+        if i < 0:  # sounds scheduled just before frame 0 start part-way through
+            s, i = s[-i:], 0
+        if i >= n or not len(s):
+            continue
+        seg = s[: n - i] * ev.get("vol", 1)
+        sfx[i: i + len(seg)] += seg
+    # Smooth the ducking so effects dip and recover without clicks.
+    k = np.ones(ramp) / ramp
+    duck = np.convolve(duck, k, mode="same")
+    end = int(data["duration"] * SR)
+    write(dst, (sfx * duck + vo)[:end])
+    if sfx_dst:
+        write(sfx_dst, sfx[:end])
+
+
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2])
+    main(sys.argv[1], sys.argv[2], sys.argv[3] if len(sys.argv) > 3 else None)

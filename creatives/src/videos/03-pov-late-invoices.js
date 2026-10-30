@@ -4,7 +4,7 @@ const { Video, endCard } = require("../engine");
 const FULL = { s: 1080 / 390, fx: 0, fy: 0, px: 0, py: 0, frame: 0, op: 1 };
 
 (async () => {
-  const v = new Video("03-pov-late-invoices", { bg: "bg-ink", dark: true, appH: 647 });
+  const v = new Video("03-pov-late-invoices", { voice: "af_heart", bg: "bg-ink", dark: true, appH: 647 });
   await v.open();
   await v.page.evaluate(() => setClock("10:47"));
   await v.quickSetup("Cleaning", 45, "Sparkle House Cleaning");
@@ -13,18 +13,23 @@ const FULL = { s: 1080 / 390, fx: 0, fy: 0, px: 0, py: 0, frame: 0, op: 1 };
   await v.scrim("hs", { h: 980, delay: -0.3, dur: 2.6 });
   await v.item("pov", '<span class="chip cream">POV</span>', { x: 60, y: 250, w: 0, delay: -0.5, enter: "pop" });
   await v.cap("hook", ["it's *10:47 PM*", "and you still haven't", "sent today's invoices"], { y: 340, size: "l", style: "cream", align: "left", delay: -0.5, stagger: 0.05 });
+  await v.say("P O V. It's ten forty seven, and the invoices still aren't sent.");
   await v.wait(2.3);
   await v.snap("hook");
+  await v.voDone(0.1);
   await v.end("hook"); await v.end("pov");
 
   // New invoice.
   await v.cap("c1", ["New invoice"], { y: 300, size: "m", style: "cream" });
+  await v.say("New invoice.");
   await v.tap("#newBtn", { post: 0.25 });
   await v.tap("#newInvoice", { post: 0.3 });
   await v.scrollTo("#tplBox", 0.4, 190);
   await v.end("c1");
 
   await v.cap("c2", ["Search the job"], { y: 300, size: "m", style: "cream" });
+
+  await v.say("Search the job.");
   await v.tap("#tplSearch", { pre: 0.25, post: 0.1 });
   await v.type("#tplSearch", "deep clean", { cps: 10 });
   await v.blur();
@@ -34,6 +39,8 @@ const FULL = { s: 1080 / 390, fx: 0, fy: 0, px: 0, py: 0, frame: 0, op: 1 };
   await v.end("c2");
 
   await v.cap("c3", ["4 bedrooms this time"], { y: 300, size: "m", style: "cream" });
+
+  await v.say("Four bedrooms this time.");
   await v.scrollTo("#tplPreview", 0.5, 230);
   await v.tap("#tplAsk", { pre: 0.25, post: 0.1 });
   await v.type("#tplAsk", "4", { cps: 6 });
@@ -45,6 +52,8 @@ const FULL = { s: 1080 / 390, fx: 0, fy: 0, px: 0, py: 0, frame: 0, op: 1 };
   await v.end("c3");
 
   await v.cap("c4", ["Customer"], { y: 300, size: "m", style: "cream" });
+
+  await v.say("Add the customer.");
   await v.scrollTo("#f-cname", 0.5, 260);
   await v.tap("#f-cname", { pre: 0.2, post: 0.1 });
   await v.type("#f-cname", "Priya Shah", { cps: 12 });
@@ -53,6 +62,7 @@ const FULL = { s: 1080 / 390, fx: 0, fy: 0, px: 0, py: 0, frame: 0, op: 1 };
 
   // Send: the bottom bar sits low, so lift the phone a little while tapping it.
   await v.cap("c5", ["Send"], { y: 300, size: "m", style: "cream" });
+  await v.say("Send.");
   await v.cam({ py: -330 }, 0.4);
   await v.wait(0.3);
   await v.tap("#mSend", { post: 0 });
@@ -68,12 +78,13 @@ const FULL = { s: 1080 / 390, fx: 0, fy: 0, px: 0, py: 0, frame: 0, op: 1 };
 
   await v.cam({ op: 0 }, 0.25);
   await v.cap("sent", ["Sent.", "Still *10:47.*"], { y: 260, size: "xl", style: "cream" });
+  await v.say("Sent. And it's still ten forty seven.");
   await v.item("pdf", `<div class="pdfcard"><div class="bar"><span class="ic">PDF</span><div>${pdfName}<small>Sparkle House Cleaning</small></div></div><img src="${png}"></div>`,
     { x: 70, y: 620, w: 0, enter: "rise", adur: 0.6, sound: "whoosh", rot: 1.5 });
   await v.wait(2.6);
   await v.snap("sent");
 
-  await endCard(v, { lines: ["Invoices done before bed"] });
+  await endCard(v, { say: "Job Ticket. Invoices done before bed. Link in bio.", lines: ["Invoices done before bed"] });
 
   await v.finish(async (v) => {
     await v.cam(Object.assign({}, FULL, { op: 1, py: -40 }), 0);

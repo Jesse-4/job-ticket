@@ -2,21 +2,24 @@
 const { Video, endCard } = require("../engine");
 
 (async () => {
-  const v = new Video("01-speed-plumber", { bg: "bg-paper" });
+  const v = new Video("01-speed-plumber", { bg: "bg-paper", voice: "am_michael" });
   await v.open();
   // Open close on the phone so the first frame is already busy, then settle into the frame.
   await v.cam({ s: 1.62, fx: 195, fy: 0, px: 489, py: 640 }, 0);
 
   await v.item("chip", '<span class="chip carbon">Plumbers</span>', { x: 60, y: 214, w: 0, delay: -0.5, enter: "pop" });
   await v.cap("hook", ["Water heater quote.", "Clock starts *now.*"], { y: 318, align: "left", x: 60, size: "l", style: "ink", delay: -0.5, stagger: 0.06 });
+  await v.say("Water heater quote. Clock starts now.");
   await v.wait(0.5);
   await v.timer({ x: 330, y: 194 });
   await v.snap("hook");
   await v.wait(1.0);
 
   // Setup: trade is already Plumbing; type rate and name.
+  await v.voDone(0.1);
   await v.end("hook"); await v.end("chip");
   await v.cap("s1", ["Your rate, your name"], { y: 326, size: "m", style: "white", delay: 0.1 });
+  await v.say("Your hourly rate, your business name.");
   await v.cam({ s: 2.15, fx: 195, fy: 300, px: 489, py: 1010 }, 0.7);
   await v.tap("#w-rate", { pre: 0.25, post: 0.1 });
   await v.type("#w-rate", "125", { cps: 8 });
@@ -30,6 +33,7 @@ const { Video, endCard } = require("../engine");
   // Search the job.
   await v.cam({ s: 1.95, fx: 195, fy: 250, px: 489, py: 900 }, 0.6);
   await v.cap("s2", ["Search the job"], { y: 326, size: "m", style: "white" });
+  await v.say("Search the job.");
   await v.scrollTo("#tplBox", 0.5, 70);
   await v.tap("#tplSearch", { pre: 0.25, post: 0.1 });
   await v.type("#tplSearch", "water heater", { cps: 10 });
@@ -39,6 +43,7 @@ const { Video, endCard } = require("../engine");
   await v.tap(".tpl-card[data-tpl]", { post: 0.2 });
   await v.end("s2");
   await v.cap("s3", ["Priced from *your* rate"], { y: 326, size: "m", style: "white" });
+  await v.say("Priced from your own rate. Not a guess.");
   await v.scrollTo("#tplPreview", 0.6, 40);
   await v.callout("#tplLines .sum", { dur: 1.4, pad: 4 });
   await v.snap("preview");
@@ -48,6 +53,7 @@ const { Video, endCard } = require("../engine");
 
   // Customer name.
   await v.cap("s4", ["Who's it for?"], { y: 326, size: "m", style: "white" });
+  await v.say("Add the customer.");
   await v.scrollTo("#f-cname", 0.6, 160);
   await v.tap("#f-cname", { pre: 0.2, post: 0.1 });
   await v.type("#f-cname", "Dana Whitfield", { cps: 12 });
@@ -57,6 +63,7 @@ const { Video, endCard } = require("../engine");
   // Send.
   await v.cam({ s: 1.62, fx: 195, fy: 0, px: 489, py: 600 }, 0.6);
   await v.cap("s5", ["Send it"], { y: 326, size: "m", style: "white" });
+  await v.say("And send it.");
   await v.wait(0.4);
   await v.tap("#mSend", { post: 0 });
   await v.slideSheet("#sendSheet .sheet");
@@ -74,15 +81,17 @@ const { Video, endCard } = require("../engine");
   // Straight to what the customer gets.
   await v.cam({ op: 0 }, 0.25);
   await v.cap("done", ["Done. *Under a minute.*"], { y: 326, size: "m", style: "ink" });
+  await v.say("Done. Under a minute.");
   await v.item("pdf", `<div class="pdfcard"><div class="bar"><span class="ic">PDF</span><div>${pdfName}<small>Rivera Plumbing</small></div></div><img src="${png}"></div>`,
     { x: 70, y: 460, w: 0, enter: "rise", adur: 0.6, sound: "whoosh", rot: -1.5 });
   await v.wait(1.6);
   await v.snap("pdf");
   await v.end("done");
   await v.cap("s6", ["What your customer gets"], { y: 326, size: "m", style: "white", delay: 0.25 });
+  await v.say("And that's the P D F your customer gets.", { delay: 0.25 });
   await v.wait(2.0);
 
-  await endCard(v, { lines: ["Quotes &amp; invoices in about a minute"] });
+  await endCard(v, { lines: ["Quotes &amp; invoices in about a minute"], say: "Job Ticket. Your first three invoices are free. Link in bio." });
   await v.snap("end");
 
   await v.finish(async (v) => {
